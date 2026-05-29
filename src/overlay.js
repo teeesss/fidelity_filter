@@ -205,8 +205,8 @@ import { wildcardToRegex } from './matching.js';
     if (!isTargeting) return;
     const path = e.composedPath();
     
-    // Find the highest element in the path that represents a row container
-    const target = path.find(el => {
+    // Filter all elements in the path that match our row container criteria
+    const rowMatches = path.filter(el => {
       if (!el.tagName) return false;
       const tag = el.tagName.toLowerCase();
       const classes = Array.from(el.classList || []).join(' ').toLowerCase();
@@ -224,6 +224,9 @@ import { wildcardToRegex } from './matching.js';
              classes.includes('holding') ||
              classes.includes('position');
     });
+
+    // Select the highest/outermost matched element (last in the matching list closest to body)
+    const target = rowMatches.length > 0 ? rowMatches[rowMatches.length - 1] : null;
 
     if (target && target.tagName && !document.getElementById('fidelity-wildcard-overlay').contains(target)) {
       if (hoverTarget && hoverTarget !== target) {
