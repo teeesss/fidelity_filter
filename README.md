@@ -10,6 +10,13 @@ It enables rapid portfolio filtering using advanced wildcard patterns and multi-
 
 ---
 
+## 📥 Direct Downloads & Quick Links
+
+* **🚀 [Download Bookmarklet Payload (dist/bookmarklet.txt)](./dist/bookmarklet.txt)** – Open this file, copy the single-line `javascript:...` code, and paste it directly into your browser bookmark's URL box.
+* **📦 [Download Extension Directory (extension/)](./extension)** – Clone or download this folder to load directly as an unpacked developer extension in Chrome (`chrome://extensions/`).
+
+---
+
 ## 🚀 Key Features
 
 * **Glassmorphic Micro-UI:** Extremely polished design utilizing modern see-through glass aesthetics (`rgba(255, 255, 255, 0.05)` background, a 20px backdrop blur, a fine crisp dark outline, and `4px` rounded corners).

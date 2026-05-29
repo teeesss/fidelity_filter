@@ -1,8 +1,15 @@
 # Fidelity Positions Wildcard Filter Overlay
 
-An ultra-premium, see-through glassmorphic Chrome Extension (Manifest V3) and bookmarklet that inserts a wildcard-enabled live search bar directly into the **Fidelity Digital Positions** dashboard. 
+An ultra-premium, see-through glassmorphic Chrome Extension and bookmarklet that inserts a wildcard-enabled live search bar directly into the **Fidelity Digital Positions** dashboard. 
 
 It enables portfolio filtering using advanced wildcard patterns and multi-term union searches (e.g. `*CIFR* & *DRAM*`), snapping inline perfectly in the Positions table header.
+
+---
+
+## 📥 Direct Downloads & Quick Links
+
+* **🚀 [Download Bookmarklet Payload (dist/bookmarklet.txt)](./dist/bookmarklet.txt)** – Open this file, copy the single-line `javascript:...` code, and paste it directly into your browser bookmark's URL box.
+* **📦 [Download Extension Directory (extension/)](./extension)** – Clone or download this folder to load directly as an unpacked developer extension in Chrome (`chrome://extensions/`).
 
 ---
 
