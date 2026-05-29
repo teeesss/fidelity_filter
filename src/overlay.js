@@ -1,0 +1,149 @@
+import { wildcardToRegex } from './matching.js';
+
+(function() {
+  if (document.getElementById('fidelity-wildcard-overlay')) return;
+
+  // 1. Create and inject style
+  const style = document.createElement('style');
+  style.id = 'fw-overlay-styles';
+  style.innerHTML = `
+    #fidelity-wildcard-overlay {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 2147483647;
+      background: rgba(30, 41, 59, 0.75);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 12px;
+      padding: 12px;
+      box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      color: #f1f5f9;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 320px;
+      animation: fw-slide-in 0.3s ease-out;
+    }
+    @keyframes fw-slide-in {
+      from { transform: translateY(-20px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+    #fw-search-input {
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 6px;
+      color: #fff;
+      padding: 6px 10px;
+      font-size: 13px;
+      outline: none;
+      flex: 1;
+      transition: border 0.2s;
+    }
+    #fw-search-input:focus {
+      border-color: #6366f1;
+    }
+    #fw-match-count {
+      background: rgba(99, 102, 241, 0.2);
+      color: #818cf8;
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: bold;
+      white-space: nowrap;
+    }
+    .fw-btn {
+      background: transparent;
+      border: none;
+      color: #94a3b8;
+      cursor: pointer;
+      font-size: 14px;
+      padding: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 4px;
+      transition: background 0.2s, color 0.2s;
+    }
+    .fw-btn:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: #fff;
+    }
+    .fw-hidden-row {
+      display: none !important;
+    }
+    .fw-highlight-target {
+      outline: 2px solid #6366f1 !important;
+      cursor: crosshair !important;
+    }
+  `;
+  document.head.appendChild(style);
+
+  // 2. Create Floating Widget
+  const container = document.createElement('div');
+  container.id = 'fidelity-wildcard-overlay';
+  container.innerHTML = `
+    <span style="font-size: 16px; user-select: none;">🔍</span>
+    <input type="text" id="fw-search-input" placeholder="Filter (*jun*2026)..." autocomplete="off">
+    <span id="fw-match-count">0 / 0</span>
+    <button id="fw-target-btn" class="fw-btn" title="Target specific table">🎯</button>
+    <button id="fw-close-btn" class="fw-btn" title="Close and restore rows">✕</button>
+  `;
+  document.body.appendChild(container);
+
+  const input = document.getElementById('fw-search-input');
+  const badge = document.getElementById('fw-match-count');
+  const closeBtn = document.getElementById('fw-close-btn');
+  const targetBtn = document.getElementById('fw-target-btn');
+
+  let currentSelector = 'tr.pos-row, tbody tr'; // Default selectors
+
+  function applyFilter() {
+    const pattern = input.value.trim();
+    const regex = wildcardToRegex(pattern);
+    const rows = document.querySelectorAll(currentSelector);
+    
+    let matchedCount = 0;
+    let totalCount = 0;
+
+    rows.forEach(row => {
+      // Exclude header rows or internal structures
+      if (row.tagName === 'TR' && row.querySelector('th')) return;
+      totalCount++;
+
+      const text = row.textContent || '';
+      if (!pattern || regex.test(text)) {
+        row.classList.remove('fw-hidden-row');
+        matchedCount++;
+      } else {
+        row.classList.add('fw-hidden-row');
+      }
+    });
+
+    badge.textContent = `${matchedCount} / ${totalCount}`;
+  }
+
+  input.addEventListener('input', applyFilter);
+
+  // 3. Mutation Observer to auto-filter loaded dynamic elements
+  const observer = new MutationObserver(() => {
+    applyFilter();
+  });
+  observer.observe(document.body, { childList: true, subtree: true });
+
+  // 4. Close & Clean Up routine
+  function destroy() {
+    observer.disconnect();
+    document.querySelectorAll('.fw-hidden-row').forEach(row => {
+      row.classList.remove('fw-hidden-row');
+    });
+    container.remove();
+    style.remove();
+  }
+  closeBtn.addEventListener('click', destroy);
+
+  // Expose destroy globally for re-injections
+  window.destroyFidelityOverlay = destroy;
+})();
