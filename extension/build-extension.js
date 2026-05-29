@@ -34,12 +34,13 @@ const messageListener = `
 // ── Popup message listener (Chrome Extension only) ────────────────────────
 chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
   if (msg.action === 'relaunch') {
-    launchOverlay();
+    if (typeof window.launchFidelityOverlay === 'function') {
+      try { window.launchFidelityOverlay(); } catch(e) { console.error(e); }
+    }
     sendResponse({ active: true });
   } else if (msg.action === 'close') {
-    if (typeof window.__fwDestroy === 'function') {
-      try { window.__fwDestroy(); } catch(e) {}
-      window.__fwDestroy = null;
+    if (typeof window.destroyFidelityOverlay === 'function') {
+      try { window.destroyFidelityOverlay(); } catch(e) { console.error(e); }
     }
     sendResponse({ active: false });
   } else if (msg.action === 'status') {

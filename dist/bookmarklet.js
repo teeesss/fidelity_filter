@@ -19,7 +19,7 @@ function matchText(text, pattern) {
 
 
 
-(function() {
+window.launchFidelityOverlay = function() {
   if (window.destroyFidelityOverlay) {
     try {
       window.destroyFidelityOverlay();
@@ -491,4 +491,5 @@ function matchText(text, pattern) {
 
   // Expose destroy globally for re-injections
   window.destroyFidelityOverlay = destroy;
-})();
+};
+window.launchFidelityOverlay();

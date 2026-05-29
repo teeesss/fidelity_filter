@@ -1,6 +1,6 @@
 import { wildcardToRegex, matchText } from './matching.js';
 
-(function() {
+window.launchFidelityOverlay = function() {
   if (window.destroyFidelityOverlay) {
     try {
       window.destroyFidelityOverlay();
@@ -472,4 +472,5 @@ import { wildcardToRegex, matchText } from './matching.js';
 
   // Expose destroy globally for re-injections
   window.destroyFidelityOverlay = destroy;
-})();
+};
+window.launchFidelityOverlay();
