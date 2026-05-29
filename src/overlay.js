@@ -99,6 +99,9 @@ import { wildcardToRegex } from './matching.js';
   const targetBtn = document.getElementById('fw-target-btn');
 
   let currentSelector = 'tr.pos-row, tbody tr'; // Default selectors
+  let isTargeting = false;
+  let activeElements = [];
+  let selectElementHandler = null;
 
   function applyFilter() {
     const pattern = input.value.trim();
@@ -133,9 +136,67 @@ import { wildcardToRegex } from './matching.js';
   });
   observer.observe(document.body, { childList: true, subtree: true });
 
+  function cleanupTargeting() {
+    if (!isTargeting) return;
+    isTargeting = false;
+    targetBtn.style.color = '#94a3b8';
+    targetBtn.style.background = 'transparent';
+    activeElements.forEach(el => {
+      el.classList.remove('fw-highlight-target');
+      if (selectElementHandler) {
+        el.removeEventListener('click', selectElementHandler);
+      }
+    });
+    activeElements = [];
+    selectElementHandler = null;
+  }
+
+  function enableTargeting() {
+    if (isTargeting) return;
+    isTargeting = true;
+    targetBtn.style.color = '#6366f1';
+    targetBtn.style.background = 'rgba(99, 102, 241, 0.2)';
+    
+    const elements = document.querySelectorAll('table, tbody, ul, ol, div.grid, div.holding-container, [role="table"]');
+    activeElements = Array.from(elements);
+    activeElements.forEach(el => el.classList.add('fw-highlight-target'));
+
+    selectElementHandler = function selectElement(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      
+      const targeted = e.currentTarget;
+      if (targeted.tagName === 'TABLE' || targeted.tagName === 'TBODY') {
+        currentSelector = targeted.id ? `#${targeted.id} tr` : 'table tr';
+      } else {
+        const classNameClean = targeted.className
+          .replace(/\s+/g, '.')
+          .replace('.fw-highlight-target', '')
+          .trim();
+        currentSelector = targeted.id ? `#${targeted.id} > *` : (classNameClean ? `.${classNameClean} > *` : '> *');
+      }
+
+      cleanupTargeting();
+      applyFilter();
+    };
+
+    activeElements.forEach(el => {
+      el.addEventListener('click', selectElementHandler);
+    });
+  }
+
+  targetBtn.addEventListener('click', () => {
+    if (!isTargeting) {
+      enableTargeting();
+    } else {
+      cleanupTargeting();
+    }
+  });
+
   // 4. Close & Clean Up routine
   function destroy() {
     observer.disconnect();
+    cleanupTargeting();
     document.querySelectorAll('.fw-hidden-row').forEach(row => {
       row.classList.remove('fw-hidden-row');
     });
