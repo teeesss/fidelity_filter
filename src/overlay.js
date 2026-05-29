@@ -269,7 +269,7 @@ function launchOverlay() {
 
     // Sort the row-index groups numerically or in their original DOM order if possible
     // Standard Object keys maintain insertion order or numeric order
-    const groupKeys = Object.keys(groups).sort((a, b) => {
+    const sortedGroupKeys = groupKeys.sort((a, b) => {
       const na = parseInt(a, 10);
       const nb = parseInt(b, 10);
       if (!isNaN(na) && !isNaN(nb)) return na - nb;
@@ -277,9 +277,8 @@ function launchOverlay() {
     });
 
     // Evaluate and reposition each row group
-    groupKeys.forEach(rowIndex => {
+    sortedGroupKeys.forEach(rowIndex => {
       const groupRows = groups[rowIndex];
-      totalCount++;
 
       // Combine text content deeply from all elements in the group (e.g. left + center grid panels)
       let combinedText = '';
