@@ -44,7 +44,7 @@ function matchText(text, pattern) {
     }
     #fidelity-wildcard-overlay.inline {
       position: relative !important;
-      top: auto !important;
+      top: -24px !important;
       left: auto !important;
       right: auto !important;
       bottom: auto !important;
