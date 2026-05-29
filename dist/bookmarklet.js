@@ -170,6 +170,7 @@ function matchText(text, pattern) {
     rows.forEach(row => {
       // Exclude header rows or internal structures
       if (row.tagName === 'TR' && row.querySelector('th')) return;
+      if (row.className && row.className.includes('ag-header-row')) return;
       
       const rowIndex = row.getAttribute('row-index') || row.getAttribute('row-id') || row.id || 'single';
       if (!groups[rowIndex]) {
