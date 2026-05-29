@@ -12,8 +12,22 @@ It enables rapid portfolio filtering using advanced wildcard patterns and multi-
 
 ## 📥 Direct Downloads & Quick Links
 
-* **🚀 [Download Bookmarklet Payload (dist/bookmarklet.txt)](./dist/bookmarklet.txt)** – Open this file, copy the single-line `javascript:...` code, and paste it directly into your browser bookmark's URL box.
-* **📦 [Download Extension Directory (extension/)](./extension)** – Clone or download this folder to load directly as an unpacked developer extension in Chrome (`chrome://extensions/`).
+* **📦 [Download Extension Directory (extension/)](https://github.com/teeesss/fidelity_filter/tree/master/extension)** – Clone or download this folder to load directly as an unpacked developer extension in Chrome (`chrome://extensions/`). *(Recommended — runs automatically on every visit)*
+
+* **🚀 [Download Bookmarklet (dist/bookmarklet.txt)](https://raw.githubusercontent.com/teeesss/fidelity_filter/master/dist/bookmarklet.txt)** – Open this file, copy the single-line `javascript:...` code, and paste it directly into your browser bookmark's URL box. *(Alternative to the extension — no install required)*
+
+> [!NOTE]
+> ### 🔖 What is a Bookmarklet?
+> A **bookmarklet** is a regular browser bookmark whose URL contains JavaScript code instead of a web address.
+> When you click it, it runs that code **on whatever page you're currently viewing** — no extensions, no installs, no permissions required.
+>
+> **It is 100% separate from the Chrome Extension.** You only need one or the other:
+> | | Chrome Extension | Bookmarklet |
+> |---|---|---|
+> | **Activation** | Automatic — loads on every Fidelity visit | Manual — click the bookmark each time |
+> | **Install** | Requires Developer Mode in Chrome | Just paste into a bookmark URL |
+> | **Works in other browsers** | Chrome only | Any browser (Firefox, Edge, Safari, etc.) |
+> | **Persists across reloads** | ✅ Yes | ❌ Must re-click after page reload |
 
 ---
 
