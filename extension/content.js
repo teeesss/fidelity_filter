@@ -30,6 +30,31 @@ function matchText(text, pattern) {
   `;
   document.body.appendChild(container);
 
+  // Dynamic positioning relative to native search bar
+  function positionOverlay() {
+    const searchInput = document.getElementById('fa-search-input') || document.querySelector('.smart-suggest');
+    if (searchInput && container.parentNode) {
+      const rect = searchInput.getBoundingClientRect();
+      container.style.position = 'absolute';
+      const topOffset = window.pageYOffset + rect.top - container.offsetHeight - 8;
+      container.style.top = `${topOffset}px`;
+      const leftOffset = window.pageXOffset + rect.left + rect.width - container.offsetWidth;
+      container.style.left = `${leftOffset}px`;
+      container.style.right = 'auto';
+      container.style.margin = '0';
+    } else {
+      container.style.position = 'fixed';
+      container.style.top = '20px';
+      container.style.right = '20px';
+      container.style.left = 'auto';
+    }
+  }
+
+  // Position it immediately and on resize/scroll
+  setTimeout(positionOverlay, 0);
+  window.addEventListener('resize', positionOverlay);
+  window.addEventListener('scroll', positionOverlay);
+
   const input = document.getElementById('fw-search-input');
   const badge = document.getElementById('fw-match-count');
   const closeBtn = document.getElementById('fw-close-btn');
@@ -296,6 +321,8 @@ function matchText(text, pattern) {
   function destroy() {
     observer.disconnect();
     cleanupTargeting();
+    window.removeEventListener('resize', positionOverlay);
+    window.removeEventListener('scroll', positionOverlay);
     const rows = querySelectorAllDeep(currentSelector);
     rows.forEach(row => {
       row.classList.remove('fw-hidden-row');
