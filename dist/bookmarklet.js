@@ -140,6 +140,24 @@ function matchText(text, pattern) {
     return elements;
   }
 
+  // Recursively gets all text content from an element, piercing shadow roots
+  function getTextContentDeep(node) {
+    if (!node) return '';
+    if (node.nodeType === Node.TEXT_NODE) {
+      return node.nodeValue;
+    }
+    let text = '';
+    let child = node.firstChild;
+    while (child) {
+      text += getTextContentDeep(child);
+      child = child.nextSibling;
+    }
+    if (node.shadowRoot) {
+      text += getTextContentDeep(node.shadowRoot);
+    }
+    return text;
+  }
+
   function applyFilter() {
     const pattern = input.value.trim();
     const regex = wildcardToRegex(pattern);
@@ -153,7 +171,7 @@ function matchText(text, pattern) {
       if (row.tagName === 'TR' && row.querySelector('th')) return;
       totalCount++;
 
-      const text = row.textContent || '';
+      const text = getTextContentDeep(row);
       if (!pattern || regex.test(text)) {
         row.classList.remove('fw-hidden-row');
         matchedCount++;
