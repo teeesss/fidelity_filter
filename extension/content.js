@@ -20,7 +20,13 @@ function matchText(text, pattern) {
 
 
 (function() {
-  if (document.getElementById('fidelity-wildcard-overlay')) return;
+  if (window.destroyFidelityOverlay) {
+    try {
+      window.destroyFidelityOverlay();
+    } catch (e) {
+      console.warn('Failed to clean up prior overlay:', e);
+    }
+  }
 
   // Styles loaded via manifest.json content_scripts css
 
