@@ -131,33 +131,40 @@ function matchText(text, pattern) {
 
   // Dynamic positioning relative to native search bar
   function positionOverlay() {
-    const parent = document.querySelector('.posweb-grid_top-buttons-search-container');
-    if (parent) {
-      const searchWrapper = parent.querySelector('.posweb-grid_top-search');
-      if (searchWrapper) {
-        if (container.parentNode !== parent) {
-          parent.insertBefore(container, searchWrapper);
+    if (typeof observer !== 'undefined' && observer) observer.disconnect();
+    try {
+      const parent = document.querySelector('.posweb-grid_top-buttons-search-container');
+      if (parent) {
+        const searchWrapper = parent.querySelector('.posweb-grid_top-search');
+        if (searchWrapper) {
+          if (container.parentNode !== parent) {
+            parent.insertBefore(container, searchWrapper);
+          }
+          container.classList.add('inline');
+          // Clear fallback inline styles so stylesheet relative rules take over
+          container.style.position = '';
+          container.style.top = '';
+          container.style.left = '';
+          container.style.right = '';
+          container.style.margin = '';
+          return;
         }
-        container.classList.add('inline');
-        // Clear fallback inline styles so stylesheet relative rules take over
-        container.style.position = '';
-        container.style.top = '';
-        container.style.left = '';
-        container.style.right = '';
-        container.style.margin = '';
-        return;
+      }
+      
+      // Viewport fallback
+      if (container.parentNode !== document.body) {
+        document.body.appendChild(container);
+      }
+      container.classList.remove('inline');
+      container.style.position = 'fixed';
+      container.style.top = '20px';
+      container.style.right = '20px';
+      container.style.left = 'auto';
+    } finally {
+      if (typeof observer !== 'undefined' && observer) {
+        observer.observe(document.body, { childList: true, subtree: true });
       }
     }
-    
-    // Viewport fallback
-    if (container.parentNode !== document.body) {
-      document.body.appendChild(container);
-    }
-    container.classList.remove('inline');
-    container.style.position = 'fixed';
-    container.style.top = '20px';
-    container.style.right = '20px';
-    container.style.left = 'auto';
   }
 
   // Position it immediately and on resize/scroll
@@ -220,12 +227,43 @@ function matchText(text, pattern) {
 
   let originalTops = new Map();
 
+  function isNestedRow(row) {
+    let parent = row.parentElement;
+    while (parent) {
+      const cls = typeof parent.className === 'string' ? parent.className : '';
+      const role = parent.getAttribute?.('role') || '';
+      
+      if (cls.includes('ag-detail-row') || 
+          cls.includes('posweb-earnings-panel') || 
+          cls.includes('posweb-detail') || 
+          cls.includes('detail-pane') ||
+          cls.includes('ag-detail-cell') ||
+          role === 'dialog' || 
+          role === 'tooltip' ||
+          (parent.tagName === 'TABLE' && parent.closest('.ag-detail-row'))
+      ) {
+        return true;
+      }
+      
+      if (parent !== row && (parent.classList?.contains('ag-row') || parent.classList?.contains('pos-row') || parent.tagName === 'TR')) {
+        if (parent.getAttribute?.('role') === 'row' || parent.classList?.contains('ag-row') || parent.classList?.contains('pos-row')) {
+          return true;
+        }
+      }
+      
+      parent = parent.parentElement;
+    }
+    return false;
+  }
+
   function applyFilter() {
-    const pattern = input.value.trim();
-    const rows = querySelectorAllDeep(currentSelector);
-    
-    // Group rows by row-index (essential for ag-Grid split column layouts)
-    const groups = {};
+    if (typeof observer !== 'undefined' && observer) observer.disconnect();
+    try {
+      const pattern = input.value.trim();
+      const rows = querySelectorAllDeep(currentSelector).filter(row => !isNestedRow(row));
+      
+      // Group rows by row-index (essential for ag-Grid split column layouts)
+      const groups = {};
     rows.forEach(row => {
       // Exclude header rows or internal structures
       if (row.tagName === 'TR' && row.querySelector('th')) return;
@@ -319,6 +357,11 @@ function matchText(text, pattern) {
     });
 
     badge.textContent = `${matchedCount} / ${totalCount}`;
+    } finally {
+      if (typeof observer !== 'undefined' && observer) {
+        observer.observe(document.body, { childList: true, subtree: true });
+      }
+    }
   }
 
   input.addEventListener('input', applyFilter);
