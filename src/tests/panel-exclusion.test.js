@@ -31,7 +31,7 @@ function getTextContentDeep(node, isRoot = false) {
     const cls = node.className || '';
     if (node.tagName === 'SVG') return '';
 
-    const isGridContainer = cls.includes('ag-row') || cls.includes('ag-cell') || cls.includes('pos-row');
+    const isGridContainer = cls.includes('ag-') || cls.includes('pos-row');
     if (!isRoot && !isGridContainer && cls && SKIP_CLASS_RE.test(cls)) {
       return '';
     }
@@ -164,7 +164,7 @@ describe('Panel Exclusion — earnings flyout must not bleed into row text', () 
     let combined = getTextContentDeep(expandedRowNode, true);
     assert.ok(matchText(combined, 'EWY'), 'Expanded row must still match EWY pattern');
 
-    // Simulated detail row container
+    // Simulated detail row container (root-level call)
     const detailRowNode = el('div', {
       className: 'ag-detail-row',
       children: [
@@ -173,5 +173,34 @@ describe('Panel Exclusion — earnings flyout must not bleed into row text', () 
     });
     let combinedDetail = getTextContentDeep(detailRowNode, true);
     assert.ok(matchText(combinedDetail, 'EWY'), 'Detail row must still match EWY pattern');
+  });
+
+  test('nested ag-detail-row (non-root recursion) is NOT skipped', () => {
+    // Simulated ag-row that has a nested ag-detail-row inside it
+    const parentRow = el('div', {
+      className: 'ag-row ag-row-expanded',
+      children: [
+        el('div', {
+          className: 'ag-cell',
+          children: [txt('DRAM')]
+        }),
+        el('div', {
+          className: 'ag-detail-row', // class contains 'detail', but has 'ag-' prefix
+          children: [
+            el('div', {
+              className: 'ag-cell',
+              children: [txt('DRAM 90 Call')]
+            })
+          ]
+        })
+      ]
+    });
+
+    // Traverse starting at parentRow (isRoot = true)
+    // The nested ag-detail-row will be visited with isRoot = false.
+    // It should not be skipped, so "DRAM 90 Call" text must be included.
+    const text = getTextContentDeep(parentRow, true);
+    assert.ok(text.includes('DRAM 90 Call'), 'Nested detail row text must be scraped');
+    assert.ok(matchText(text, '*90 Call*'), 'Search query matching nested leg must succeed');
   });
 });

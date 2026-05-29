@@ -129,7 +129,7 @@ function launchOverlay() {
 
       // Skip elements that match panel/tooltip/dialog indicators,
       // but NOT the root row itself, and NOT standard grid rows/cells.
-      const isGridContainer = cls.includes('ag-row') || cls.includes('ag-cell') || cls.includes('pos-row');
+      const isGridContainer = cls.includes('ag-') || cls.includes('pos-row');
       if (!isRoot && !isGridContainer && cls && SKIP_CLASS_RE.test(cls)) {
         return '';
       }
