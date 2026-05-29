@@ -31,7 +31,7 @@ import { wildcardToRegex } from './matching.js';
     }
     #fidelity-wildcard-overlay.inline {
       position: relative !important;
-      top: -42px !important;
+      top: -50px !important;
       left: auto !important;
       right: auto !important;
       bottom: auto !important;
