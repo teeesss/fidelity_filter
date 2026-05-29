@@ -29,7 +29,7 @@ function matchText(text, pattern) {
       backdrop-filter: blur(20px);
       -webkit-backdrop-filter: blur(20px);
       border: 1px solid rgba(128, 128, 128, 0.15);
-      border-radius: 6px;
+      border-radius: 4px;
       padding: 2px 8px;
       box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
       font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Helvetica, Arial, sans-serif;
@@ -44,13 +44,14 @@ function matchText(text, pattern) {
     }
     #fidelity-wildcard-overlay.inline {
       position: relative !important;
-      top: -24px !important;
+      top: -42px !important;
       left: auto !important;
       right: auto !important;
       bottom: auto !important;
       margin: 0 8px !important;
       box-shadow: none !important;
-      border: 1px solid rgba(128, 128, 128, 0.2) !important;
+      border: 1px solid rgba(0, 0, 0, 0.85) !important;
+      border-radius: 4px !important;
       background: rgba(255, 255, 255, 0.03) !important;
     }
     @keyframes fw-fade-in {
@@ -116,7 +117,7 @@ function matchText(text, pattern) {
   container.id = 'fidelity-wildcard-overlay';
   container.innerHTML = `
     <svg class="fw-search-svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color: rgba(128, 128, 128, 0.65); flex-shrink: 0; display: flex; align-items: center;"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-    <input type="text" id="fw-search-input" placeholder="Filter positions..." autocomplete="off">
+    <input type="text" id="fw-search-input" placeholder="Wildcard Filtering..." autocomplete="off">
     <span id="fw-match-count">0/0</span>
     <button id="fw-close-btn" class="fw-btn" title="Close and restore rows">✕</button>
   `;
