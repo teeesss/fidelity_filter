@@ -143,6 +143,7 @@ function matchText(text, pattern) {
   // Recursively gets all text content from an element, piercing shadow roots
   function getTextContentDeep(node) {
     if (!node) return '';
+    if (node.tagName === 'STYLE' || node.tagName === 'SCRIPT') return '';
     if (node.nodeType === Node.TEXT_NODE) {
       return node.nodeValue;
     }
@@ -202,6 +203,7 @@ function matchText(text, pattern) {
       groupRows.forEach(row => {
         combinedText += ' ' + getTextContentDeep(row);
       });
+      combinedText = combinedText.replace(/\s+/g, ' ').trim();
 
       const isMatch = !pattern || regex.test(combinedText);
 
