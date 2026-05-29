@@ -14,12 +14,12 @@ let matchingCode = fs.readFileSync(matchingPath, 'utf-8');
 
 // Replace import with actual implementation
 const matchFnStr = matchingCode
-  .replace("import { wildcardToRegex } from './matching.js';", '')
   .replace('export function wildcardToRegex', 'function wildcardToRegex')
   .replace('export function matchText', 'function matchText');
 
+const importPattern = /import\s*\{\s*[\w\s,]+\s*\}\s*from\s*['"]\.\/matching\.js['"];/g;
 overlayCode = overlayCode.replace(
-  "import { wildcardToRegex } from './matching.js';",
+  importPattern,
   () => matchFnStr
 );
 
