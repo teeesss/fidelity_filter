@@ -205,14 +205,27 @@ import { wildcardToRegex } from './matching.js';
     if (!isTargeting) return;
     const path = e.composedPath();
     
-    // Resiliently detect rows or card elements in the event path
+    // Find the highest element in the path that represents a row container
     const target = path.find(el => {
       if (!el.tagName) return false;
       const tag = el.tagName.toLowerCase();
-      return tag === 'tr' || tag === 'li' || el.classList?.contains('pos-row') || el.getAttribute?.('role') === 'row';
-    }) || path[0];
+      const classes = Array.from(el.classList || []).join(' ').toLowerCase();
+      
+      // Exclude overlay elements
+      if (el.id === 'fidelity-wildcard-overlay' || el.id === 'fw-search-input') return false;
+      
+      return tag === 'tr' || 
+             tag === 'li' || 
+             el.getAttribute?.('role') === 'row' ||
+             el.getAttribute?.('role') === 'listitem' ||
+             tag.includes('row') || 
+             tag.includes('holding') ||
+             classes.includes('row') || 
+             classes.includes('holding') ||
+             classes.includes('position');
+    });
 
-    if (target && target.tagName && target.id !== 'fw-search-input' && !document.getElementById('fidelity-wildcard-overlay').contains(target)) {
+    if (target && target.tagName && !document.getElementById('fidelity-wildcard-overlay').contains(target)) {
       if (hoverTarget && hoverTarget !== target) {
         hoverTarget.classList.remove('fw-highlight-target');
       }
@@ -233,14 +246,8 @@ import { wildcardToRegex } from './matching.js';
         .filter(c => c !== 'fw-highlight-target' && c !== 'fw-hidden-row')
         .join('.');
 
-      // Dynamically lock onto this element type as the row selector
-      if (tag === 'tr') {
-        currentSelector = 'tr';
-      } else if (classes) {
-        currentSelector = `${tag}.${classes}`;
-      } else {
-        currentSelector = tag;
-      }
+      // Build a robust selector that targets all rows of this type
+      currentSelector = classes ? `${tag}.${classes}` : tag;
     }
 
     cleanupTargeting();
