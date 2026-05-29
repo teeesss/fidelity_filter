@@ -191,7 +191,7 @@ function launchOverlay() {
   // Skips overlay panels, earnings flyouts, tooltips and dialogs so that
   // date text inside those widgets does not cause false wildcard matches.
   const SKIP_ROLES    = new Set(['dialog','tooltip','alertdialog','status','complementary','note']);
-  const SKIP_CLASS_RE = /panel|popup|flyout|tooltip|earnings|analytics|drawer|overlay|modal|aside|sidebar/i;
+  const SKIP_CLASS_RE = /panel|popup|flyout|tooltip|earnings|analytics|drawer|overlay|modal|aside|sidebar|detail|expand/i;
 
   function getTextContentDeep(node, isRoot = false) {
     if (!node) return '';
@@ -204,7 +204,7 @@ function launchOverlay() {
 
       // Skip elements that match panel/tooltip/dialog indicators,
       // but NOT the root row itself, and NOT standard grid rows/cells.
-      const isGridContainer = cls.includes('ag-') || cls.includes('pos-row');
+      const isGridContainer = cls.includes('ag-row') || cls.includes('ag-cell') || cls.includes('pos-row');
       if (!isRoot && !isGridContainer && cls && SKIP_CLASS_RE.test(cls)) {
         return '';
       }
@@ -231,10 +231,6 @@ function launchOverlay() {
     if (clearBtn) {
       clearBtn.style.display = input.value ? 'flex' : 'none';
     }
-    // Always clear the position cache before each pass.
-    // ag-Grid recycles row elements, so entries from a previous pass
-    // may point to stale positions on freshly-rendered rows.
-    originalTops.clear();
     const rows = querySelectorAllDeep(currentSelector);
     
     // Group rows by row-index (essential for ag-Grid split column layouts)
@@ -251,28 +247,13 @@ function launchOverlay() {
       groups[rowIndex].push(row);
     });
 
-    const groupKeys = Object.keys(groups);
-    const totalCount = groupKeys.length;
-
-    if (!pattern) {
-      rows.forEach(row => {
-        row.classList.remove('fw-hidden-row');
-        // originalTops was cleared at the top of this call, so we can't restore from
-        // it here. Instead, strip any inline top/transform we wrote during filtering
-        // so ag-Grid resumes control of its own row positions.
-        row.style.top = '';
-        row.style.transform = '';
-      });
-      badge.textContent = `${totalCount} / ${totalCount}`;
-      return;
-    }
-
     let matchedCount = 0;
+    let totalCount = 0;
     let accumulatedY = 0;
 
     // Sort the row-index groups numerically or in their original DOM order if possible
     // Standard Object keys maintain insertion order or numeric order
-    const sortedGroupKeys = groupKeys.sort((a, b) => {
+    const groupKeys = Object.keys(groups).sort((a, b) => {
       const na = parseInt(a, 10);
       const nb = parseInt(b, 10);
       if (!isNaN(na) && !isNaN(nb)) return na - nb;
@@ -280,8 +261,9 @@ function launchOverlay() {
     });
 
     // Evaluate and reposition each row group
-    sortedGroupKeys.forEach(rowIndex => {
+    groupKeys.forEach(rowIndex => {
       const groupRows = groups[rowIndex];
+      totalCount++;
 
       // Combine text content deeply from all elements in the group (e.g. left + center grid panels)
       let combinedText = '';
@@ -336,10 +318,11 @@ function launchOverlay() {
       } else {
         groupRows.forEach(row => {
           row.classList.add('fw-hidden-row');
-          // Strip any inline position overrides we may have written in a prior pass
-          // so ag-Grid's own styles take over when this row becomes visible again.
-          row.style.top = '';
-          row.style.transform = '';
+          if (originalTops.has(row)) {
+            const orig = originalTops.get(row);
+            row.style.top = orig.top;
+            row.style.transform = orig.transform;
+          }
         });
       }
     });
@@ -358,34 +341,18 @@ function launchOverlay() {
   applyFilter(); // Initialize state and count on startup
 
   // 3. Mutation Observer to auto-filter loaded dynamic elements and snap relative layouts
-  // Debounced so ag-Grid row-expansion animations (which fire dozens of rapid mutations)
-  // don't spam applyFilter and cause flickering.
-  let _mutationTimer = null;
   const observer = new MutationObserver((mutations) => {
-    const overlay = document.getElementById('fidelity-wildcard-overlay');
-
-    // Skip mutations that are entirely inside our own overlay widget.
-    const isOverlayOnly = mutations.every(m => overlay && overlay.contains(m.target));
-    if (isOverlayOnly) return;
-
-    // Skip attribute-only mutations on ag-Grid rows — these are row-expand/collapse
-    // animations that don't change which rows exist; re-filtering here causes the flicker.
-    const isAgGridAttributeOnly = mutations.every(m =>
-      m.type === 'attributes' &&
-      m.target &&
-      typeof m.target.className === 'string' &&
-      m.target.className.includes('ag-')
-    );
-    if (isAgGridAttributeOnly) return;
-
-    // Debounce: wait until the DOM settles before re-filtering.
-    clearTimeout(_mutationTimer);
-    _mutationTimer = setTimeout(() => {
-      applyFilter();
-      positionOverlay();
-    }, 150);
+    // Ignore mutations that occur inside our own overlay
+    const isOverlayMutation = mutations.every(m => {
+      const overlay = document.getElementById('fidelity-wildcard-overlay');
+      return overlay && overlay.contains(m.target);
+    });
+    if (isOverlayMutation) return;
+    
+    applyFilter();
+    positionOverlay();
   });
-  observer.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['class', 'style', 'row-index'] });
+  observer.observe(document.body, { childList: true, subtree: true });
 
   function cleanupTargeting() {
     if (!isTargeting) return;
@@ -484,7 +451,6 @@ function launchOverlay() {
 
   // 4. Close & Clean Up routine
   function destroy() {
-    clearTimeout(_mutationTimer);
     observer.disconnect();
     cleanupTargeting();
     window.removeEventListener('resize', positionOverlay);
@@ -492,9 +458,11 @@ function launchOverlay() {
     const rows = querySelectorAllDeep(currentSelector);
     rows.forEach(row => {
       row.classList.remove('fw-hidden-row');
-      // Strip any inline positions we wrote — ag-Grid manages its own layout after this
-      row.style.top = '';
-      row.style.transform = '';
+      if (originalTops.has(row)) {
+        const orig = originalTops.get(row);
+        row.style.top = orig.top;
+        row.style.transform = orig.transform;
+      }
     });
     originalTops.clear();
     container.remove();
