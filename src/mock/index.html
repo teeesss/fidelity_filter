@@ -26,32 +26,57 @@
       </tr>
     </thead>
     <tbody>
-      <tr class="pos-row">
-        <td>CIFR260220C28 (CIFR FEB 20 26 $28 CALL)</td>
+      <tr class="pos-row" row-index="0" style="position: absolute; transform: translateY(0px); height: 38px;">
+        <td><a class="posweb-equity-detail-link" href="#" onclick="toggleRowDetail(0)">CIFR260220C28 (CIFR FEB 20 26 $28 CALL)</a></td>
         <td>$2.45</td>
         <td>-10</td>
         <td>-$2,450.00</td>
       </tr>
-      <tr class="pos-row">
-        <td>CIFR260620C30 (CIFR JUN 20 26 $30 CALL)</td>
+      <tr class="pos-row" row-index="1" style="position: absolute; transform: translateY(38px); height: 38px;">
+        <td><a class="posweb-equity-detail-link" href="#" onclick="toggleRowDetail(1)">CIFR260620C30 (CIFR JUN 20 26 $30 CALL)</a></td>
         <td>$3.10</td>
         <td>-5</td>
         <td>-$1,550.00</td>
       </tr>
-      <tr class="pos-row">
-        <td>AAPL260618C180 (AAPL JUN 18 26 $180 CALL)</td>
+      <tr class="pos-row" row-index="2" style="position: absolute; transform: translateY(76px); height: 38px;">
+        <td><a class="posweb-equity-detail-link" href="#" onclick="toggleRowDetail(2)">AAPL260618C180 (AAPL JUN 18 26 $180 CALL)</a></td>
         <td>$12.50</td>
         <td>2</td>
         <td>$2,500.00</td>
       </tr>
-      <tr class="pos-row">
-        <td>MSFT260116P400 (MSFT JAN 16 26 $400 PUT)</td>
+      <tr class="pos-row" row-index="3" style="position: absolute; transform: translateY(114px); height: 38px;">
+        <td><a class="posweb-equity-detail-link" href="#" onclick="toggleRowDetail(3)">MSFT260116P400 (MSFT JAN 16 26 $400 PUT)</a></td>
         <td>$18.20</td>
         <td>-1</td>
         <td>-$1,820.00</td>
       </tr>
     </tbody>
   </table>
+
+  <script>
+    function toggleRowDetail(idx) {
+      const rows = document.querySelectorAll('.pos-row');
+      const targetRow = Array.from(rows).find(r => r.getAttribute('row-index') === String(idx));
+      if (!targetRow) return;
+
+      const existingDetail = targetRow.querySelector('.posweb-earnings-panel');
+      if (existingDetail) {
+        existingDetail.remove();
+        targetRow.style.height = '38px';
+      } else {
+        const detail = document.createElement('div');
+        detail.className = 'posweb-earnings-panel';
+        detail.style.padding = '8px';
+        detail.style.background = '#334155';
+        detail.style.marginTop = '4px';
+        detail.innerHTML = '<strong>Consensus -$0.182</strong> | Report Date: Jun-01-2026';
+        targetRow.appendChild(detail);
+        targetRow.style.height = '80px';
+      }
+      // Notify overlay to re-align layouts (simulate mutation)
+      document.body.dispatchEvent(new Event('change'));
+    }
+  </script>
   
   <button onclick="addDynamicRow()" style="margin-top:1rem; padding: 8px 16px;">Add Dynamic Row (June Option)</button>
   <script>
