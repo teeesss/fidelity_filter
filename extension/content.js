@@ -11,7 +11,7 @@ function matchText(text, pattern) {
   if (!pattern) return true;
   const terms = pattern.split('&').map(p => p.trim()).filter(Boolean);
   if (terms.length === 0) return true;
-  return terms.every(term => {
+  return terms.some(term => {
     const regex = wildcardToRegex(term);
     return regex.test(text);
   });
