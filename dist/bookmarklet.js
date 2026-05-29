@@ -25,15 +25,15 @@ function matchText(text, pattern) {
       top: 20px;
       right: 20px;
       z-index: 2147483647;
-      background: rgba(15, 23, 42, 0.9);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(128, 128, 128, 0.15);
       border-radius: 6px;
       padding: 2px 8px;
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
       font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Helvetica, Arial, sans-serif;
-      color: #f5f5f7;
+      color: inherit;
       display: flex;
       align-items: center;
       gap: 6px;
@@ -50,8 +50,8 @@ function matchText(text, pattern) {
       bottom: auto !important;
       margin: 0 8px !important;
       box-shadow: none !important;
-      border: 1px solid rgba(255, 255, 255, 0.12) !important;
-      background: rgba(30, 41, 59, 0.85) !important;
+      border: 1px solid rgba(128, 128, 128, 0.2) !important;
+      background: rgba(255, 255, 255, 0.03) !important;
     }
     @keyframes fw-fade-in {
       from { opacity: 0; transform: translateY(-4px); }
@@ -60,7 +60,7 @@ function matchText(text, pattern) {
     #fw-search-input {
       background: transparent;
       border: none;
-      color: #fff;
+      color: inherit;
       padding: 0;
       font-size: 12px;
       font-weight: 400;
@@ -71,14 +71,14 @@ function matchText(text, pattern) {
       letter-spacing: -0.01em;
     }
     #fw-search-input::placeholder {
-      color: rgba(255, 255, 255, 0.4);
+      color: rgba(128, 128, 128, 0.55);
     }
     #fw-match-count {
-      color: rgba(255, 255, 255, 0.55);
+      color: rgba(128, 128, 128, 0.7);
       font-size: 10px;
       font-weight: 500;
       font-variant-numeric: tabular-nums;
-      border-left: 1px solid rgba(255, 255, 255, 0.15);
+      border-left: 1px solid rgba(128, 128, 128, 0.2);
       padding-left: 6px;
       margin-left: 2px;
       white-space: nowrap;
@@ -87,7 +87,7 @@ function matchText(text, pattern) {
     .fw-btn {
       background: transparent;
       border: none;
-      color: rgba(255, 255, 255, 0.45);
+      color: rgba(128, 128, 128, 0.7);
       cursor: pointer;
       font-size: 11px;
       padding: 2px;
@@ -98,8 +98,8 @@ function matchText(text, pattern) {
       transition: color 0.15s, background 0.15s;
     }
     .fw-btn:hover {
-      background: rgba(255, 255, 255, 0.08);
-      color: #fff;
+      background: rgba(128, 128, 128, 0.1);
+      color: inherit;
     }
     .fw-hidden-row {
       display: none !important;
@@ -115,7 +115,7 @@ function matchText(text, pattern) {
   const container = document.createElement('div');
   container.id = 'fidelity-wildcard-overlay';
   container.innerHTML = `
-    <span style="font-size: 12px; color: rgba(255, 255, 255, 0.5); user-select: none; display: flex; align-items: center;">🔍</span>
+    <svg class="fw-search-svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color: rgba(128, 128, 128, 0.65); flex-shrink: 0; display: flex; align-items: center;"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
     <input type="text" id="fw-search-input" placeholder="Filter positions..." autocomplete="off">
     <span id="fw-match-count">0/0</span>
     <button id="fw-close-btn" class="fw-btn" title="Close and restore rows">✕</button>

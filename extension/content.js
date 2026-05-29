@@ -22,7 +22,7 @@ function matchText(text, pattern) {
   const container = document.createElement('div');
   container.id = 'fidelity-wildcard-overlay';
   container.innerHTML = `
-    <span style="font-size: 12px; color: rgba(255, 255, 255, 0.5); user-select: none; display: flex; align-items: center;">🔍</span>
+    <svg class="fw-search-svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color: rgba(128, 128, 128, 0.65); flex-shrink: 0; display: flex; align-items: center;"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
     <input type="text" id="fw-search-input" placeholder="Filter positions..." autocomplete="off">
     <span id="fw-match-count">0/0</span>
     <button id="fw-close-btn" class="fw-btn" title="Close and restore rows">✕</button>
