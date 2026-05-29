@@ -231,13 +231,11 @@ import { wildcardToRegex, matchText } from './matching.js';
   }
 
   function applyFilter() {
-    if (typeof observer !== 'undefined' && observer) observer.disconnect();
-    try {
-      const pattern = input.value.trim();
-      const rows = querySelectorAllDeep(currentSelector).filter(row => !isNestedRow(row));
-      
-      // Group rows by row-index (essential for ag-Grid split column layouts)
-      const groups = {};
+    const pattern = input.value.trim();
+    const rows = querySelectorAllDeep(currentSelector).filter(row => !isNestedRow(row));
+    
+    // Group rows by row-index (essential for ag-Grid split column layouts)
+    const groups = {};
     rows.forEach(row => {
       // Exclude header rows or internal structures
       if (row.tagName === 'TR' && row.querySelector('th')) return;
@@ -331,11 +329,6 @@ import { wildcardToRegex, matchText } from './matching.js';
     });
 
     badge.textContent = `${matchedCount} / ${totalCount}`;
-    } finally {
-      if (typeof observer !== 'undefined' && observer) {
-        observer.observe(document.body, { childList: true, subtree: true });
-      }
-    }
   }
 
   input.addEventListener('input', applyFilter);
