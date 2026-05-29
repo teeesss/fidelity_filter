@@ -210,7 +210,7 @@ function launchOverlay() {
   // Skips overlay panels, earnings flyouts, tooltips and dialogs so that
   // date text inside those widgets does not cause false wildcard matches.
   const SKIP_ROLES    = new Set(['dialog','tooltip','alertdialog','status','complementary','note']);
-  const SKIP_CLASS_RE = /panel|popup|flyout|tooltip|earnings|analytics|drawer|overlay|modal|aside|sidebar|detail|expand/i;
+  const SKIP_CLASS_RE = /panel|popup|flyout|tooltip|earnings|analytics|drawer|overlay|modal|aside|sidebar/i;
 
   function getTextContentDeep(node, isRoot = false) {
     if (!node) return '';

@@ -19,7 +19,7 @@ import { matchText } from '../matching.js';
 
 // ─── Simulate getTextContentDeep with the panel-exclusion guard ──────────────
 const SKIP_ROLES    = new Set(['dialog', 'tooltip', 'alertdialog', 'status', 'complementary', 'note']);
-const SKIP_CLASS_RE = /panel|popup|flyout|tooltip|earnings|analytics|drawer|overlay|modal|aside|sidebar|detail|expand/i;
+const SKIP_CLASS_RE = /panel|popup|flyout|tooltip|earnings|analytics|drawer|overlay|modal|aside|sidebar/i;
 
 function getTextContentDeep(node, isRoot = false) {
   if (!node) return '';
@@ -203,4 +203,19 @@ describe('Panel Exclusion — earnings flyout must not bleed into row text', () 
     assert.ok(text.includes('DRAM 90 Call'), 'Nested detail row text must be scraped');
     assert.ok(matchText(text, '*90 Call*'), 'Search query matching nested leg must succeed');
   });
+
+  test('nested non-ag cells with detail or expand in class name are NOT skipped', () => {
+    const rowNode = el('div', {
+      className: 'ag-row',
+      children: [
+        el('a', { className: 'posweb-equity-detail-link', children: [txt('EWY')] }),
+        el('span', { className: 'expand-icon-label', children: [txt('Korea')] }),
+      ]
+    });
+    let text = '';
+    for (const child of rowNode.children) text += getTextContentDeep(child, false);
+    assert.ok(text.includes('EWY'), 'EWY inside detail link must be scraped');
+    assert.ok(text.includes('Korea'), 'Korea inside expand label must be scraped');
+  });
 });
+

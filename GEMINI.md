@@ -64,6 +64,10 @@ It enables rapid portfolio filtering using advanced wildcard patterns and multi-
 * When searching for `CIFR & DRAM`, a human expects to see *both* symbols in their rows.
 * Because no individual row contains both `CIFR` and `DRAM` strings at the same time, this must be evaluated as an **`OR` (union)** filter (`terms.some(term => regex.test(text))`), rather than an `AND` filter.
 
+### Overly-Broad Class Exclusion Bug
+* **Lesson Learned**: When ignoring specific floating overlay/panel/tooltip components during text extraction, avoid broad keywords like `detail` or `expand` in class filters.
+* ag-Grid and Fidelity assign classes like `ag-row-expanded` or cell classes like `posweb-equity-detail` to standard row containers and cells. Excluding these keywords entirely causes crucial row content (e.g. the equity symbol) to be omitted during text scraping, leading to filtered rows disappearing the moment they are clicked or expanded. Keep component exclusion lists specific to floating panels/dialogs/drawers.
+
 ---
 
 ## 🧪 Automated Testing
