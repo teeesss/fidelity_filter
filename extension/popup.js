@@ -32,17 +32,25 @@ function setStatus(active) {
   const tab = await getActiveTab();
   if (!tab) { setStatus(false); return; }
 
+  const isFidelity = tab.url && tab.url.includes('fidelity.com');
+
   try {
     const response = await chrome.tabs.sendMessage(tab.id, { action: 'status' });
     setStatus(response?.active === true);
   } catch {
-    // Content script not running on this page (e.g. non-Fidelity tab)
     setStatus(false);
-    relaunchBtn.disabled = true;
-    relaunchBtn.style.opacity = '0.4';
     closeBtn.disabled = true;
     closeBtn.style.opacity = '0.4';
-    showFeedback('Open a Fidelity Positions page first.', 'rgba(255,180,0,0.8)');
+
+    if (isFidelity) {
+      relaunchBtn.disabled = false;
+      relaunchBtn.style.opacity = '1.0';
+      showFeedback('Filter inactive. Click Relaunch to activate.', 'rgba(255,180,0,0.8)');
+    } else {
+      relaunchBtn.disabled = true;
+      relaunchBtn.style.opacity = '0.4';
+      showFeedback('Open a Fidelity Positions page first.', 'rgba(255,180,0,0.8)');
+    }
   }
 })();
 
@@ -58,7 +66,13 @@ relaunchBtn.addEventListener('click', async () => {
     showFeedback('✓ Filter relaunched!');
     setTimeout(() => window.close(), 900);
   } catch {
-    showFeedback('Could not reach the page.', '#f87171');
+    if (tab.url && tab.url.includes('fidelity.com')) {
+      showFeedback('Reloading page to inject filter...', '#38bdf8');
+      chrome.tabs.reload(tab.id);
+      setTimeout(() => window.close(), 1000);
+    } else {
+      showFeedback('Could not reach the page.', '#f87171');
+    }
   }
 });
 
