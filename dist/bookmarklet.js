@@ -250,10 +250,6 @@ function launchOverlay() {
     if (clearBtn) {
       clearBtn.style.display = input.value ? 'flex' : 'none';
     }
-    // Always clear the position cache before each pass.
-    // ag-Grid recycles row elements, so entries from a previous pass
-    // may point to stale positions on freshly-rendered rows.
-    originalTops.clear();
     const rows = querySelectorAllDeep(currentSelector);
     
     // Group rows by row-index (essential for ag-Grid split column layouts)
@@ -276,11 +272,13 @@ function launchOverlay() {
     if (!pattern) {
       rows.forEach(row => {
         row.classList.remove('fw-hidden-row');
-        // originalTops was cleared at the top of this call, so we can't restore from
-        // it here. Instead, strip any inline top/transform we wrote during filtering
-        // so ag-Grid resumes control of its own row positions.
-        row.style.top = '';
-        row.style.transform = '';
+        if (originalTops.has(row)) {
+          const orig = originalTops.get(row);
+          row.style.top = orig.top;
+          row.style.transform = orig.transform;
+          row.__fwLastTop = orig.top;
+          row.__fwLastTransform = orig.transform;
+        }
       });
       badge.textContent = `${totalCount} / ${totalCount}`;
       return;
@@ -328,10 +326,20 @@ function launchOverlay() {
           row.classList.remove('fw-hidden-row');
           
           // Save original absolute positioning and transforms
-          if (!originalTops.has(row)) {
+          // If ag-Grid has changed the row style (e.g. recycled element), update the cache
+          const currentTop = row.style.top;
+          const currentTransform = row.style.transform;
+          const lastWrittenTop = row.__fwLastTop;
+          const lastWrittenTransform = row.__fwLastTransform;
+
+          const isStyleChangedByAgGrid = 
+            (lastWrittenTop !== undefined && currentTop !== lastWrittenTop) ||
+            (lastWrittenTransform !== undefined && currentTransform !== lastWrittenTransform);
+
+          if (isStyleChangedByAgGrid || !originalTops.has(row)) {
             originalTops.set(row, {
-              top: row.style.top,
-              transform: row.style.transform
+              top: currentTop,
+              transform: currentTransform
             });
           }
           
@@ -339,26 +347,41 @@ function launchOverlay() {
           const styleAttr = row.getAttribute('style') || '';
           if (styleAttr.includes('transform:') || styleAttr.includes('translateY') || row.style.transform) {
             if (row.style.transform && row.style.transform.includes('translateY')) {
-              row.style.transform = row.style.transform.replace(/translateY\([-\d.]+px\)/, `translateY(${accumulatedY}px)`);
+              const newTransform = row.style.transform.replace(/translateY\([-\d.]+px\)/, `translateY(${accumulatedY}px)`);
+              row.style.transform = newTransform;
+              row.__fwLastTransform = newTransform;
+              row.__fwLastTop = '';
             } else if (styleAttr.includes('translateY')) {
               // Direct replacement in style attribute if style.transform isn't fully synced
               const newStyle = styleAttr.replace(/translateY\([-\d.]+px\)/, `translateY(${accumulatedY}px)`);
               row.setAttribute('style', newStyle);
+              const match = newStyle.match(/translateY\([-\d.]+px\)/);
+              row.__fwLastTransform = match ? match[0] : '';
+              row.__fwLastTop = '';
             } else {
-              row.style.transform = `translateY(${accumulatedY}px)`;
+              const newTransform = `translateY(${accumulatedY}px)`;
+              row.style.transform = newTransform;
+              row.__fwLastTransform = newTransform;
+              row.__fwLastTop = '';
             }
           } else {
-            row.style.top = accumulatedY + 'px';
+            const newTop = accumulatedY + 'px';
+            row.style.top = newTop;
+            row.__fwLastTop = newTop;
+            row.__fwLastTransform = '';
           }
         });
         accumulatedY += groupHeight;
       } else {
         groupRows.forEach(row => {
           row.classList.add('fw-hidden-row');
-          // Strip any inline position overrides we may have written in a prior pass
-          // so ag-Grid's own styles take over when this row becomes visible again.
-          row.style.top = '';
-          row.style.transform = '';
+          if (originalTops.has(row)) {
+            const orig = originalTops.get(row);
+            row.style.top = orig.top;
+            row.style.transform = orig.transform;
+            row.__fwLastTop = orig.top;
+            row.__fwLastTransform = orig.transform;
+          }
         });
       }
     });
@@ -511,9 +534,13 @@ function launchOverlay() {
     const rows = querySelectorAllDeep(currentSelector);
     rows.forEach(row => {
       row.classList.remove('fw-hidden-row');
-      // Strip any inline positions we wrote — ag-Grid manages its own layout after this
-      row.style.top = '';
-      row.style.transform = '';
+      if (originalTops.has(row)) {
+        const orig = originalTops.get(row);
+        row.style.top = orig.top;
+        row.style.transform = orig.transform;
+      }
+      delete row.__fwLastTop;
+      delete row.__fwLastTransform;
     });
     originalTops.clear();
     container.remove();
