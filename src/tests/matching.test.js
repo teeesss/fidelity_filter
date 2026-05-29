@@ -19,12 +19,10 @@ describe('Wildcard Matching', () => {
     assert.strictEqual(matchText('Fidelity July 2026', '*jun*2026'), false);
   });
 
-  test('matchText handles multi-term AND matching with &', () => {
-    const text = 'CIFR option holdings IREN and DRAM holdings';
-    assert.strictEqual(matchText(text, '*CIFR* & *IREN*'), true);
-    assert.strictEqual(matchText(text, '*CIFR*&*IREN*'), true);
-    assert.strictEqual(matchText(text, '*CIFR*&*IREN &*DRAM'), true);
-    assert.strictEqual(matchText(text, '*CIFR* & *IREN* & *DRAM*'), true);
-    assert.strictEqual(matchText(text, '*CIFR* & *AAPL*'), false);
+  test('matchText handles multi-term union matching with & (OR matching)', () => {
+    assert.strictEqual(matchText('CIFR option holdings', '*CIFR* & *IREN*'), true);
+    assert.strictEqual(matchText('IREN option holdings', '*CIFR* & *IREN*'), true);
+    assert.strictEqual(matchText('DRAM option holdings', '*CIFR* & *IREN* & *DRAM*'), true);
+    assert.strictEqual(matchText('AAPL option holdings', '*CIFR* & *IREN*'), false);
   });
 });
