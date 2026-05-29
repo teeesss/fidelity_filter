@@ -98,15 +98,39 @@ import { wildcardToRegex } from './matching.js';
   const closeBtn = document.getElementById('fw-close-btn');
   const targetBtn = document.getElementById('fw-target-btn');
 
-  let currentSelector = 'tr.pos-row, tbody tr'; // Default selectors
+  let currentSelector = 'tr.pos-row, tbody tr, tr, [role="row"]'; // Pre-configured selectors
   let isTargeting = false;
-  let activeElements = [];
-  let selectElementHandler = null;
+  let hoverTarget = null;
+
+  // Traverses all open Shadow roots to find elements matching a selector
+  function querySelectorAllDeep(selector, root = document) {
+    const elements = [];
+    function traverse(node) {
+      if (!node) return;
+      if (node.querySelectorAll) {
+        node.querySelectorAll(selector).forEach(el => {
+          if (!elements.includes(el)) elements.push(el);
+        });
+      }
+      // Traverse light DOM children
+      let child = node.firstElementChild;
+      while (child) {
+        traverse(child);
+        child = child.nextElementSibling;
+      }
+      // Pierce Shadow DOM
+      if (node.shadowRoot) {
+        traverse(node.shadowRoot);
+      }
+    }
+    traverse(root);
+    return elements;
+  }
 
   function applyFilter() {
     const pattern = input.value.trim();
     const regex = wildcardToRegex(pattern);
-    const rows = document.querySelectorAll(currentSelector);
+    const rows = querySelectorAllDeep(currentSelector);
     
     let matchedCount = 0;
     let totalCount = 0;
@@ -149,14 +173,60 @@ import { wildcardToRegex } from './matching.js';
     isTargeting = false;
     targetBtn.style.color = '#94a3b8';
     targetBtn.style.background = 'transparent';
-    activeElements.forEach(el => {
-      el.classList.remove('fw-highlight-target');
-      if (selectElementHandler) {
-        el.removeEventListener('click', selectElementHandler);
+    
+    if (hoverTarget) {
+      hoverTarget.classList.remove('fw-highlight-target');
+      hoverTarget = null;
+    }
+
+    document.removeEventListener('mousemove', handleMouseMove, true);
+    document.removeEventListener('click', handleGlobalClick, true);
+  }
+
+  function handleMouseMove(e) {
+    if (!isTargeting) return;
+    const path = e.composedPath();
+    
+    // Resiliently detect rows or card elements in the event path
+    const target = path.find(el => {
+      if (!el.tagName) return false;
+      const tag = el.tagName.toLowerCase();
+      return tag === 'tr' || tag === 'li' || el.classList?.contains('pos-row') || el.getAttribute?.('role') === 'row';
+    }) || path[0];
+
+    if (target && target.tagName && target.id !== 'fw-search-input' && !document.getElementById('fidelity-wildcard-overlay').contains(target)) {
+      if (hoverTarget && hoverTarget !== target) {
+        hoverTarget.classList.remove('fw-highlight-target');
       }
-    });
-    activeElements = [];
-    selectElementHandler = null;
+      hoverTarget = target;
+      hoverTarget.classList.add('fw-highlight-target');
+    }
+  }
+
+  function handleGlobalClick(e) {
+    if (!isTargeting) return;
+    e.preventDefault();
+    e.stopPropagation();
+
+    const clickedRow = hoverTarget || e.composedPath()[0];
+    if (clickedRow && clickedRow.tagName) {
+      const tag = clickedRow.tagName.toLowerCase();
+      const classes = Array.from(clickedRow.classList || [])
+        .filter(c => c !== 'fw-highlight-target' && c !== 'fw-hidden-row')
+        .join('.');
+
+      // Dynamically lock onto this element type as the row selector
+      if (tag === 'tr') {
+        currentSelector = 'tr';
+      } else if (classes) {
+        currentSelector = `${tag}.${classes}`;
+      } else {
+        currentSelector = tag;
+      }
+    }
+
+    cleanupTargeting();
+    applyFilter();
   }
 
   function enableTargeting() {
@@ -164,33 +234,9 @@ import { wildcardToRegex } from './matching.js';
     isTargeting = true;
     targetBtn.style.color = '#6366f1';
     targetBtn.style.background = 'rgba(99, 102, 241, 0.2)';
-    
-    const elements = document.querySelectorAll('table, tbody, ul, ol, div.grid, div.holding-container, [role="table"]');
-    activeElements = Array.from(elements);
-    activeElements.forEach(el => el.classList.add('fw-highlight-target'));
 
-    selectElementHandler = function selectElement(e) {
-      e.preventDefault();
-      e.stopPropagation();
-      
-      const targeted = e.currentTarget;
-      if (targeted.tagName === 'TABLE' || targeted.tagName === 'TBODY') {
-        currentSelector = targeted.id ? `#${targeted.id} tr` : 'table tr';
-      } else {
-        const classNameClean = targeted.className
-          .replace(/\s+/g, '.')
-          .replace('.fw-highlight-target', '')
-          .trim();
-        currentSelector = targeted.id ? `#${targeted.id} > *` : (classNameClean ? `.${classNameClean} > *` : '> *');
-      }
-
-      cleanupTargeting();
-      applyFilter();
-    };
-
-    activeElements.forEach(el => {
-      el.addEventListener('click', selectElementHandler);
-    });
+    document.addEventListener('mousemove', handleMouseMove, true);
+    document.addEventListener('click', handleGlobalClick, true);
   }
 
   targetBtn.addEventListener('click', () => {
@@ -205,7 +251,8 @@ import { wildcardToRegex } from './matching.js';
   function destroy() {
     observer.disconnect();
     cleanupTargeting();
-    document.querySelectorAll('.fw-hidden-row').forEach(row => {
+    const rows = querySelectorAllDeep(currentSelector);
+    rows.forEach(row => {
       row.classList.remove('fw-hidden-row');
     });
     container.remove();
