@@ -11,7 +11,7 @@ function matchText(text, pattern) {
   if (!pattern) return true;
   const terms = pattern.split('&').map(p => p.trim()).filter(Boolean);
   if (terms.length === 0) return true;
-  return terms.every(term => {
+  return terms.some(term => {
     const regex = wildcardToRegex(term);
     return regex.test(text);
   });
@@ -19,8 +19,13 @@ function matchText(text, pattern) {
 
 
 
-(function() {
-  if (document.getElementById('fidelity-wildcard-overlay')) return;
+function launchOverlay() {
+  // Cleanly destroy any prior instance before re-mounting
+  if (typeof window.__fwDestroy === 'function') {
+    try { window.__fwDestroy(); } catch(e) {}
+  }
+  const existing = document.getElementById('fidelity-wildcard-overlay');
+  if (existing) existing.remove();
 
   // 1. Create and inject style
   const style = document.createElement('style');
@@ -124,6 +129,7 @@ function matchText(text, pattern) {
   container.innerHTML = `
     <svg class="fw-search-svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color: rgba(128, 128, 128, 0.65); flex-shrink: 0; display: flex; align-items: center;"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
     <input type="text" id="fw-search-input" placeholder="Wildcard Filtering..." autocomplete="off">
+    <button id="fw-clear-btn" class="fw-btn" title="Clear search" style="display: none; font-size: 13px; line-height: 1; padding: 0 2px; margin-right: 2px;">×</button>
     <span id="fw-match-count">0/0</span>
     <button id="fw-close-btn" class="fw-btn" title="Close and restore rows">✕</button>
   `;
@@ -169,6 +175,7 @@ function matchText(text, pattern) {
   const badge = document.getElementById('fw-match-count');
   const closeBtn = document.getElementById('fw-close-btn');
   const targetBtn = document.getElementById('fw-target-btn');
+  const clearBtn = document.getElementById('fw-clear-btn');
 
   let currentSelector = 'tr.pos-row, tbody tr, tr, [role="row"]'; // Pre-configured selectors
   let isTargeting = false;
@@ -199,21 +206,39 @@ function matchText(text, pattern) {
     return elements;
   }
 
-  // Recursively gets all text content from an element, piercing shadow roots
-  function getTextContentDeep(node) {
+  // Recursively gets all text content from an element, piercing shadow roots.
+  // Skips overlay panels, earnings flyouts, tooltips and dialogs so that
+  // date text inside those widgets does not cause false wildcard matches.
+  const SKIP_ROLES    = new Set(['dialog','tooltip','alertdialog','status','complementary','note']);
+  const SKIP_CLASS_RE = /panel|popup|flyout|tooltip|earnings|analytics|drawer|overlay|modal|aside|sidebar|detail|expand/i;
+
+  function getTextContentDeep(node, isRoot = false) {
     if (!node) return '';
     if (node.tagName === 'STYLE' || node.tagName === 'SCRIPT') return '';
+    if (node.nodeType === Node.ELEMENT_NODE) {
+      const role = node.getAttribute ? node.getAttribute('role') : null;
+      if (role && SKIP_ROLES.has(role)) return '';
+      const cls = typeof node.className === 'string' ? node.className : '';
+      if (node.tagName === 'SVG' || node.tagName === 'svg') return '';
+
+      // Skip elements that match panel/tooltip/dialog indicators,
+      // but NOT the root row itself, and NOT standard grid rows/cells.
+      const isGridContainer = cls.includes('ag-row') || cls.includes('ag-cell') || cls.includes('pos-row');
+      if (!isRoot && !isGridContainer && cls && SKIP_CLASS_RE.test(cls)) {
+        return '';
+      }
+    }
     if (node.nodeType === Node.TEXT_NODE) {
       return node.nodeValue;
     }
     let text = '';
     let child = node.firstChild;
     while (child) {
-      text += getTextContentDeep(child);
+      text += getTextContentDeep(child, false);
       child = child.nextSibling;
     }
     if (node.shadowRoot) {
-      text += getTextContentDeep(node.shadowRoot);
+      text += getTextContentDeep(node.shadowRoot, false);
     }
     return text;
   }
@@ -222,6 +247,9 @@ function matchText(text, pattern) {
 
   function applyFilter() {
     const pattern = input.value.trim();
+    if (clearBtn) {
+      clearBtn.style.display = input.value ? 'flex' : 'none';
+    }
     const rows = querySelectorAllDeep(currentSelector);
     
     // Group rows by row-index (essential for ag-Grid split column layouts)
@@ -256,10 +284,10 @@ function matchText(text, pattern) {
       const groupRows = groups[rowIndex];
       totalCount++;
 
-      // Combine text content deeply from all elements in the row group (left + center panels)
+      // Combine text content deeply from all elements in the group (e.g. left + center grid panels)
       let combinedText = '';
       groupRows.forEach(row => {
-        combinedText += ' ' + getTextContentDeep(row);
+        combinedText += ' ' + getTextContentDeep(row, true);
       });
       combinedText = combinedText.replace(/\s+/g, ' ').trim();
 
@@ -322,6 +350,13 @@ function matchText(text, pattern) {
   }
 
   input.addEventListener('input', applyFilter);
+  if (clearBtn) {
+    clearBtn.addEventListener('click', () => {
+      input.value = '';
+      applyFilter();
+      input.focus();
+    });
+  }
   applyFilter(); // Initialize state and count on startup
 
   // 3. Mutation Observer to auto-filter loaded dynamic elements and snap relative layouts
@@ -454,6 +489,12 @@ function matchText(text, pattern) {
   }
   closeBtn.addEventListener('click', destroy);
 
-  // Expose destroy globally for re-injections
+  // Expose destroy so popup and bookmarklet can reach it
   window.destroyFidelityOverlay = destroy;
-})();
+  window.__fwDestroy = destroy;
+}
+
+// Bootstrap on initial page load
+if (!document.getElementById('fidelity-wildcard-overlay')) {
+  launchOverlay();
+}

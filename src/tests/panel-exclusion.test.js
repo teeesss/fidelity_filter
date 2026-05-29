@@ -21,7 +21,7 @@ import { matchText } from '../matching.js';
 const SKIP_ROLES    = new Set(['dialog', 'tooltip', 'alertdialog', 'status', 'complementary', 'note']);
 const SKIP_CLASS_RE = /panel|popup|flyout|tooltip|earnings|analytics|drawer|overlay|modal|aside|sidebar|detail|expand/i;
 
-function getTextContentDeep(node) {
+function getTextContentDeep(node, isRoot = false) {
   if (!node) return '';
   if (node.tagName === 'STYLE' || node.tagName === 'SCRIPT') return '';
 
@@ -29,8 +29,12 @@ function getTextContentDeep(node) {
     const role = node.role || null;
     if (role && SKIP_ROLES.has(role)) return '';
     const cls = node.className || '';
-    if (cls && SKIP_CLASS_RE.test(cls)) return '';
     if (node.tagName === 'SVG') return '';
+
+    const isGridContainer = cls.includes('ag-row') || cls.includes('ag-cell') || cls.includes('pos-row');
+    if (!isRoot && !isGridContainer && cls && SKIP_CLASS_RE.test(cls)) {
+      return '';
+    }
   }
 
   if (node.nodeType === 3 /* TEXT_NODE */) {
@@ -39,7 +43,7 @@ function getTextContentDeep(node) {
 
   let text = '';
   for (const child of (node.children || [])) {
-    text += getTextContentDeep(child);
+    text += getTextContentDeep(child, false);
   }
   if (node.textContent && !node.children) {
     text += node.textContent;
@@ -136,8 +140,38 @@ describe('Panel Exclusion — earnings flyout must not bleed into row text', () 
     });
 
     let combined = '';
-    for (const child of rowNode.children) combined += getTextContentDeep(child);
+    for (const child of rowNode.children) combined += getTextContentDeep(child, true);
 
     assert.ok(matchText(combined, 'jun*26'), 'Genuine Jun-2026 row must still match');
+  });
+
+  test('expanded or detailed row/cell classes are NOT skipped and match correctly', () => {
+    // Simulated row with ag-row-expanded class, containing EWY stock
+    const expandedRowNode = el('div', {
+      className: 'ag-row ag-row-expanded ag-row-level-0',
+      children: [
+        el('div', {
+          className: 'ag-cell ag-cell-value',
+          children: [txt('EWY')]
+        }),
+        el('div', {
+          className: 'ag-cell pos-row-cell',
+          children: [txt('iShares MSCI South Korea ETF')]
+        })
+      ]
+    });
+
+    let combined = getTextContentDeep(expandedRowNode, true);
+    assert.ok(matchText(combined, 'EWY'), 'Expanded row must still match EWY pattern');
+
+    // Simulated detail row container
+    const detailRowNode = el('div', {
+      className: 'ag-detail-row',
+      children: [
+        el('span', { className: 'ag-cell-value', children: [txt('EWY Option Leg')] })
+      ]
+    });
+    let combinedDetail = getTextContentDeep(detailRowNode, true);
+    assert.ok(matchText(combinedDetail, 'EWY'), 'Detail row must still match EWY pattern');
   });
 });

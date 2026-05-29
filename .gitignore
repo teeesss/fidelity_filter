@@ -3,6 +3,11 @@ node_modules/
 dist/
 *.log
 
-# Local Fidelity page snapshots — never commit
+# ── Local Fidelity page snapshots — NEVER commit, NEVER push ──────────────
+# These are local reference files only; scrubbed from git history.
 Portfolio Positions.html
 Portfolio Positions_files/
+Portfolio\ Positions*.html
+Portfolio\ Positions*_files/
+*Positions*.html
+*_files/
