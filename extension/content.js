@@ -37,40 +37,33 @@ function matchText(text, pattern) {
 
   // Dynamic positioning relative to native search bar
   function positionOverlay() {
-    if (typeof observer !== 'undefined' && observer) observer.disconnect();
-    try {
-      const parent = document.querySelector('.posweb-grid_top-buttons-search-container');
-      if (parent) {
-        const searchWrapper = parent.querySelector('.posweb-grid_top-search');
-        if (searchWrapper) {
-          if (container.parentNode !== parent) {
-            parent.insertBefore(container, searchWrapper);
-          }
-          container.classList.add('inline');
-          // Clear fallback inline styles so stylesheet relative rules take over
-          container.style.position = '';
-          container.style.top = '';
-          container.style.left = '';
-          container.style.right = '';
-          container.style.margin = '';
-          return;
+    const parent = document.querySelector('.posweb-grid_top-buttons-search-container');
+    if (parent) {
+      const searchWrapper = parent.querySelector('.posweb-grid_top-search');
+      if (searchWrapper) {
+        if (container.parentNode !== parent) {
+          parent.insertBefore(container, searchWrapper);
         }
-      }
-      
-      // Viewport fallback
-      if (container.parentNode !== document.body) {
-        document.body.appendChild(container);
-      }
-      container.classList.remove('inline');
-      container.style.position = 'fixed';
-      container.style.top = '20px';
-      container.style.right = '20px';
-      container.style.left = 'auto';
-    } finally {
-      if (typeof observer !== 'undefined' && observer) {
-        observer.observe(document.body, { childList: true, subtree: true });
+        container.classList.add('inline');
+        // Clear fallback inline styles so stylesheet relative rules take over
+        container.style.position = '';
+        container.style.top = '';
+        container.style.left = '';
+        container.style.right = '';
+        container.style.margin = '';
+        return;
       }
     }
+    
+    // Viewport fallback
+    if (container.parentNode !== document.body) {
+      document.body.appendChild(container);
+    }
+    container.classList.remove('inline');
+    container.style.position = 'fixed';
+    container.style.top = '20px';
+    container.style.right = '20px';
+    container.style.left = 'auto';
   }
 
   // Position it immediately and on resize/scroll
