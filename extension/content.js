@@ -32,17 +32,22 @@ function matchText(text, pattern) {
 
   // Dynamic positioning relative to native search bar
   function positionOverlay() {
-    const searchInput = document.getElementById('fa-search-input') || document.querySelector('.smart-suggest');
-    if (searchInput && container.parentNode) {
-      const rect = searchInput.getBoundingClientRect();
+    const searchInput = document.querySelector('.posweb-grid_top-search-icon, .posweb-grid_top-search, .posweb-grid_top-refresh-datetime, #fa-search-input, .smart-suggest');
+    const rect = searchInput ? searchInput.getBoundingClientRect() : null;
+    
+    // Ensure search input is loaded, visible, and has valid coordinate bounds
+    if (rect && rect.top > 0 && rect.left > 0 && container.parentNode) {
       container.style.position = 'absolute';
-      const topOffset = window.pageYOffset + rect.top - container.offsetHeight - 8;
+      const containerHeight = container.offsetHeight || 55;
+      const containerWidth = container.offsetWidth || 380;
+      const topOffset = window.pageYOffset + rect.top - containerHeight - 8;
       container.style.top = `${topOffset}px`;
-      const leftOffset = window.pageXOffset + rect.left + rect.width - container.offsetWidth;
+      const leftOffset = window.pageXOffset + rect.left + rect.width - containerWidth;
       container.style.left = `${leftOffset}px`;
       container.style.right = 'auto';
       container.style.margin = '0';
     } else {
+      // Safe fallback to top-right viewport fixed positioning
       container.style.position = 'fixed';
       container.style.top = '20px';
       container.style.right = '20px';
