@@ -3,22 +3,43 @@ import assert from 'node:assert';
 
 // Simulated applyFilter translation & restoration logic to test correctness
 function simulateLayoutFilter(groups, pattern, regex, originalTops) {
-  let matchedCount = 0;
-  let totalCount = 0;
-  let accumulatedY = 0;
+  const groupKeys = Object.keys(groups);
+  const totalCount = groupKeys.length;
 
+  if (!pattern) {
+    const results = {};
+    groupKeys.forEach(rowIndex => {
+      results[rowIndex] = {
+        isMatch: true,
+        rows: groups[rowIndex].map(row => {
+          let top = row.style.top;
+          let transform = row.style.transform;
+          if (originalTops.has(row)) {
+            const orig = originalTops.get(row);
+            top = orig.top;
+            transform = orig.transform;
+          }
+          return { element: row, hidden: false, top, transform };
+        })
+      };
+    });
+    originalTops.clear();
+    return { matchedCount: totalCount, totalCount, accumulatedY: 0, results };
+  }
+
+  let matchedCount = 0;
+  let accumulatedY = 0;
   const results = {};
 
-  const groupKeys = Object.keys(groups).sort((a, b) => {
+  const sortedGroupKeys = Object.keys(groups).sort((a, b) => {
     const na = parseInt(a, 10);
     const nb = parseInt(b, 10);
     if (!isNaN(na) && !isNaN(nb)) return na - nb;
     return a.localeCompare(b);
   });
 
-  groupKeys.forEach(rowIndex => {
+  sortedGroupKeys.forEach(rowIndex => {
     const groupRows = groups[rowIndex];
-    totalCount++;
 
     let combinedText = '';
     groupRows.forEach(row => {
@@ -133,5 +154,37 @@ describe('Dynamic ag-Grid Stacking Math & Restoration', () => {
     
     // The next row would sit at 38px (Group 0 height) + 48px (Group 2 height) = 86px
     assert.strictEqual(filterResult.accumulatedY, 86);
+  });
+
+  test('restores original positioning and does not translate when pattern is empty', () => {
+    const originalTops = new Map();
+
+    const row1_pinned = { textContent: 'HIMS JUN 2026', style: { height: '38px', transform: 'translateY(0px)', top: '' }, hasTransformAttr: true };
+    const row2_pinned = { textContent: 'AAPL JAN 2025', style: { height: '38px', transform: 'translateY(38px)', top: '' }, hasTransformAttr: true };
+
+    const groups = {
+      '0': [row1_pinned],
+      '1': [row2_pinned]
+    };
+
+    // Populate originalTops as if a prior filter happened
+    originalTops.set(row1_pinned, { top: '', transform: 'translateY(0px)' });
+    originalTops.set(row2_pinned, { top: '', transform: 'translateY(38px)' });
+
+    // Mutate position to simulate filtering/shifting
+    row2_pinned.style.transform = 'translateY(0px)';
+
+    // Run filter with empty pattern
+    const filterResult = simulateLayoutFilter(groups, '', null, originalTops);
+
+    assert.strictEqual(filterResult.matchedCount, 2);
+    assert.strictEqual(filterResult.totalCount, 2);
+
+    // Should have restored row2 back to its original translateY(38px)
+    assert.strictEqual(filterResult.results['1'].rows[0].transform, 'translateY(38px)');
+    assert.strictEqual(filterResult.results['1'].rows[0].hidden, false);
+
+    // originalTops should be cleared
+    assert.strictEqual(originalTops.size, 0);
   });
 });

@@ -172,8 +172,24 @@ function launchOverlay() {
       groups[rowIndex].push(row);
     });
 
+    const groupKeys = Object.keys(groups);
+    const totalCount = groupKeys.length;
+
+    if (!pattern) {
+      rows.forEach(row => {
+        row.classList.remove('fw-hidden-row');
+        if (originalTops.has(row)) {
+          const orig = originalTops.get(row);
+          row.style.top = orig.top;
+          row.style.transform = orig.transform;
+        }
+      });
+      originalTops.clear();
+      badge.textContent = `${totalCount} / ${totalCount}`;
+      return;
+    }
+
     let matchedCount = 0;
-    let totalCount = 0;
     let accumulatedY = 0;
 
     // Sort the row-index groups numerically or in their original DOM order if possible
