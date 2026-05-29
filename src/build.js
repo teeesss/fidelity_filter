@@ -20,7 +20,7 @@ const matchFnStr = matchingCode
 
 overlayCode = overlayCode.replace(
   "import { wildcardToRegex } from './matching.js';",
-  matchFnStr
+  () => matchFnStr
 );
 
 // Compress comments and extra whitespaces for single line bookmarklet

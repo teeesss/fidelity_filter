@@ -1,7 +1,7 @@
 function wildcardToRegex(pattern) {
   if (!pattern) return /^.*$/;
   // Escape all special regex characters except * and ?
-  let escaped = pattern.replace(/[\\^$+.|()[\]{}]/g, '\\import { wildcardToRegex } from './matching.js';');
+  let escaped = pattern.replace(/[\\^$+.|()[\]{}]/g, '\\$&');
   // Replace wildcards with regex equivalents
   escaped = escaped.replace(/\*/g, '.*').replace(/\?/g, '.');
   return new RegExp(escaped, 'i');
@@ -142,9 +142,17 @@ function matchText(text, pattern) {
   }
 
   input.addEventListener('input', applyFilter);
+  applyFilter(); // Initialize state and count on startup
 
   // 3. Mutation Observer to auto-filter loaded dynamic elements
-  const observer = new MutationObserver(() => {
+  const observer = new MutationObserver((mutations) => {
+    // Ignore mutations that occur inside our own overlay
+    const isOverlayMutation = mutations.every(m => {
+      const overlay = document.getElementById('fidelity-wildcard-overlay');
+      return overlay && overlay.contains(m.target);
+    });
+    if (isOverlayMutation) return;
+    
     applyFilter();
   });
   observer.observe(document.body, { childList: true, subtree: true });
