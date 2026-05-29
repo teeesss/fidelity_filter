@@ -19,8 +19,13 @@ function matchText(text, pattern) {
 
 
 
-(function() {
-  if (document.getElementById('fidelity-wildcard-overlay')) return;
+function launchOverlay() {
+  // Cleanly destroy any prior instance before re-mounting
+  if (typeof window.__fwDestroy === 'function') {
+    try { window.__fwDestroy(); } catch(e) {}
+  }
+  const existing = document.getElementById('fidelity-wildcard-overlay');
+  if (existing) existing.remove();
 
   // Styles loaded via manifest.json content_scripts css
 
@@ -105,10 +110,22 @@ function matchText(text, pattern) {
     return elements;
   }
 
-  // Recursively gets all text content from an element, piercing shadow roots
+  // Recursively gets all text content from an element, piercing shadow roots.
+  // Skips overlay panels, earnings flyouts, tooltips and dialogs so that
+  // date text inside those widgets does not cause false wildcard matches.
+  const SKIP_ROLES    = new Set(['dialog','tooltip','alertdialog','status','complementary','note']);
+  const SKIP_CLASS_RE = /panel|popup|flyout|tooltip|earnings|analytics|drawer|overlay|modal|aside|sidebar|detail|expand/i;
+
   function getTextContentDeep(node) {
     if (!node) return '';
     if (node.tagName === 'STYLE' || node.tagName === 'SCRIPT') return '';
+    if (node.nodeType === Node.ELEMENT_NODE) {
+      const role = node.getAttribute ? node.getAttribute('role') : null;
+      if (role && SKIP_ROLES.has(role)) return '';
+      const cls = typeof node.className === 'string' ? node.className : '';
+      if (cls && SKIP_CLASS_RE.test(cls)) return '';
+      if (node.tagName === 'SVG' || node.tagName === 'svg') return '';
+    }
     if (node.nodeType === Node.TEXT_NODE) {
       return node.nodeValue;
     }
@@ -360,6 +377,30 @@ function matchText(text, pattern) {
   }
   closeBtn.addEventListener('click', destroy);
 
-  // Expose destroy globally for re-injections
+  // Expose destroy so popup and bookmarklet can reach it
   window.destroyFidelityOverlay = destroy;
-})();
+  window.__fwDestroy = destroy;
+}
+
+// Bootstrap on initial page load
+if (!document.getElementById('fidelity-wildcard-overlay')) {
+  launchOverlay();
+}
+
+
+// ── Popup message listener (Chrome Extension only) ────────────────────────
+chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
+  if (msg.action === 'relaunch') {
+    launchOverlay();
+    sendResponse({ active: true });
+  } else if (msg.action === 'close') {
+    if (typeof window.__fwDestroy === 'function') {
+      try { window.__fwDestroy(); } catch(e) {}
+      window.__fwDestroy = null;
+    }
+    sendResponse({ active: false });
+  } else if (msg.action === 'status') {
+    sendResponse({ active: !!document.getElementById('fidelity-wildcard-overlay') });
+  }
+  return true; // keep channel open for async sendResponse
+});
