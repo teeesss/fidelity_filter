@@ -40,7 +40,16 @@ It enables rapid portfolio filtering using advanced wildcard patterns and multi-
 * **Deep Shadow-DOM Traversal:** Automatically pierces all shadow roots and nested containers recursively to gather all textual content inside the rows.
 * **ag-Grid Split Column Stacking:** Groups rows by their grid coordinate index and dynamically updates active translation heights (`translateY` transforms or `top` rules) so column groupings stack flush on top of one another when elements are hidden.
 
----
+## 📸 Relaunch Filter Button
+
+![Relaunch Filter button](relaunch-filter.png)
+
+**What it does:**  
+When the overlay is closed (via the **✕** button), clicking **Relaunch Filter** in the extension’s toolbar popup instantly re‑injects the filter UI on the current Fidelity page – no full page refresh needed. This gives you a quick way to bring the filter back after closing it.
+
+*The image shows the Chrome extension toolbar button (diamond icon) opening the popup, then the “Relaunch Filter” button inside the popup.*
+
+------
 
 ## 🛠️ Tech Stack & Architecture
 
