@@ -8,6 +8,12 @@ export function wildcardToRegex(pattern) {
 }
 
 export function matchText(text, pattern) {
-  const regex = wildcardToRegex(pattern);
-  return regex.test(text);
+  if (!pattern) return true;
+  const terms = pattern.split('&').map(p => p.trim()).filter(Boolean);
+  if (terms.length === 0) return true;
+  return terms.every(term => {
+    const regex = wildcardToRegex(term);
+    return regex.test(text);
+  });
 }
+

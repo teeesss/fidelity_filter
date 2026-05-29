@@ -1,4 +1,4 @@
-import { wildcardToRegex } from './matching.js';
+import { wildcardToRegex, matchText } from './matching.js';
 
 (function() {
   if (document.getElementById('fidelity-wildcard-overlay')) return;
@@ -203,7 +203,6 @@ import { wildcardToRegex } from './matching.js';
 
   function applyFilter() {
     const pattern = input.value.trim();
-    const regex = wildcardToRegex(pattern);
     const rows = querySelectorAllDeep(currentSelector);
     
     // Group rows by row-index (essential for ag-Grid split column layouts)
@@ -245,7 +244,7 @@ import { wildcardToRegex } from './matching.js';
       });
       combinedText = combinedText.replace(/\s+/g, ' ').trim();
 
-      const isMatch = !pattern || regex.test(combinedText);
+      const isMatch = !pattern || matchText(combinedText, pattern);
 
       // Determine height of this row group (from first row in group)
       let groupHeight = 38; // standard fallback
