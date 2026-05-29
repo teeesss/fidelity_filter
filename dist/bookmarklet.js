@@ -158,25 +158,102 @@ function matchText(text, pattern) {
     return text;
   }
 
+  let originalTops = new Map();
+
   function applyFilter() {
     const pattern = input.value.trim();
     const regex = wildcardToRegex(pattern);
     const rows = querySelectorAllDeep(currentSelector);
     
-    let matchedCount = 0;
-    let totalCount = 0;
-
+    // Group rows by row-index (essential for ag-Grid split column layouts)
+    const groups = {};
     rows.forEach(row => {
       // Exclude header rows or internal structures
       if (row.tagName === 'TR' && row.querySelector('th')) return;
+      
+      const rowIndex = row.getAttribute('row-index') || row.getAttribute('row-id') || row.id || 'single';
+      if (!groups[rowIndex]) {
+        groups[rowIndex] = [];
+      }
+      groups[rowIndex].push(row);
+    });
+
+    let matchedCount = 0;
+    let totalCount = 0;
+    let accumulatedY = 0;
+
+    // Sort the row-index groups numerically or in their original DOM order if possible
+    // Standard Object keys maintain insertion order or numeric order
+    const groupKeys = Object.keys(groups).sort((a, b) => {
+      const na = parseInt(a, 10);
+      const nb = parseInt(b, 10);
+      if (!isNaN(na) && !isNaN(nb)) return na - nb;
+      return a.localeCompare(b);
+    });
+
+    // Evaluate and reposition each row group
+    groupKeys.forEach(rowIndex => {
+      const groupRows = groups[rowIndex];
       totalCount++;
 
-      const text = getTextContentDeep(row);
-      if (!pattern || regex.test(text)) {
-        row.classList.remove('fw-hidden-row');
+      // Combine text content deeply from all elements in the row group (left + center panels)
+      let combinedText = '';
+      groupRows.forEach(row => {
+        combinedText += ' ' + getTextContentDeep(row);
+      });
+
+      const isMatch = !pattern || regex.test(combinedText);
+
+      // Determine height of this row group (from first row in group)
+      let groupHeight = 38; // standard fallback
+      const firstRow = groupRows[0];
+      if (firstRow) {
+        const heightStyle = firstRow.style.height || window.getComputedStyle(firstRow).height;
+        const parsedHeight = parseFloat(heightStyle);
+        if (!isNaN(parsedHeight) && parsedHeight > 0) {
+          groupHeight = parsedHeight;
+        }
+      }
+
+      if (isMatch) {
         matchedCount++;
+        groupRows.forEach(row => {
+          row.classList.remove('fw-hidden-row');
+          
+          // Save original absolute positioning and transforms
+          if (!originalTops.has(row)) {
+            originalTops.set(row, {
+              top: row.style.top,
+              transform: row.style.transform
+            });
+          }
+          
+          // Apply new vertical coordinate based on dynamic layout system (top or translateY)
+          const styleAttr = row.getAttribute('style') || '';
+          if (styleAttr.includes('transform:') || styleAttr.includes('translateY') || row.style.transform) {
+            if (row.style.transform && row.style.transform.includes('translateY')) {
+              row.style.transform = row.style.transform.replace(/translateY\([-\d.]+px\)/, `translateY(${accumulatedY}px)`);
+            } else if (styleAttr.includes('translateY')) {
+              // Direct replacement in style attribute if style.transform isn't fully synced
+              const newStyle = styleAttr.replace(/translateY\([-\d.]+px\)/, `translateY(${accumulatedY}px)`);
+              row.setAttribute('style', newStyle);
+            } else {
+              row.style.transform = `translateY(${accumulatedY}px)`;
+            }
+          } else {
+            row.style.top = accumulatedY + 'px';
+          }
+        });
+        accumulatedY += groupHeight;
       } else {
-        row.classList.add('fw-hidden-row');
+        groupRows.forEach(row => {
+          row.classList.add('fw-hidden-row');
+          if (originalTops.has(row)) {
+            const orig = originalTops.get(row);
+            row.style.top = orig.top;
+            row.style.transform = orig.transform;
+          }
+        });
       }
     });
 
@@ -295,7 +372,13 @@ function matchText(text, pattern) {
     const rows = querySelectorAllDeep(currentSelector);
     rows.forEach(row => {
       row.classList.remove('fw-hidden-row');
+      if (originalTops.has(row)) {
+        const orig = originalTops.get(row);
+        row.style.top = orig.top;
+        row.style.transform = orig.transform;
+      }
     });
+    originalTops.clear();
     container.remove();
     style.remove();
   }
