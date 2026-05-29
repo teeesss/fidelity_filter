@@ -25,70 +25,87 @@ function matchText(text, pattern) {
       top: 20px;
       right: 20px;
       z-index: 2147483647;
-      background: rgba(30, 41, 59, 0.75);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      border-radius: 12px;
-      padding: 12px;
-      box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      color: #f1f5f9;
+      background: rgba(15, 23, 42, 0.9);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 6px;
+      padding: 2px 8px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Helvetica, Arial, sans-serif;
+      color: #f5f5f7;
       display: flex;
       align-items: center;
-      gap: 8px;
-      min-width: 320px;
-      animation: fw-slide-in 0.3s ease-out;
+      gap: 6px;
+      min-width: 220px;
+      height: 28px;
+      box-sizing: border-box;
+      animation: fw-fade-in 0.2s ease-out;
     }
-    @keyframes fw-slide-in {
-      from { transform: translateY(-20px); opacity: 0; }
-      to { transform: translateY(0); opacity: 1; }
+    #fidelity-wildcard-overlay.inline {
+      position: relative !important;
+      top: auto !important;
+      left: auto !important;
+      right: auto !important;
+      bottom: auto !important;
+      margin: 0 8px !important;
+      box-shadow: none !important;
+      border: 1px solid rgba(255, 255, 255, 0.12) !important;
+      background: rgba(30, 41, 59, 0.85) !important;
+    }
+    @keyframes fw-fade-in {
+      from { opacity: 0; transform: translateY(-4px); }
+      to { opacity: 1; transform: translateY(0); }
     }
     #fw-search-input {
-      background: rgba(15, 23, 42, 0.6);
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      border-radius: 6px;
+      background: transparent;
+      border: none;
       color: #fff;
-      padding: 6px 10px;
-      font-size: 13px;
+      padding: 0;
+      font-size: 12px;
+      font-weight: 400;
       outline: none;
       flex: 1;
-      transition: border 0.2s;
+      width: 100%;
+      height: 100%;
+      letter-spacing: -0.01em;
     }
-    #fw-search-input:focus {
-      border-color: #6366f1;
+    #fw-search-input::placeholder {
+      color: rgba(255, 255, 255, 0.4);
     }
     #fw-match-count {
-      background: rgba(99, 102, 241, 0.2);
-      color: #818cf8;
-      padding: 3px 8px;
-      border-radius: 6px;
-      font-size: 11px;
-      font-weight: bold;
+      color: rgba(255, 255, 255, 0.55);
+      font-size: 10px;
+      font-weight: 500;
+      font-variant-numeric: tabular-nums;
+      border-left: 1px solid rgba(255, 255, 255, 0.15);
+      padding-left: 6px;
+      margin-left: 2px;
       white-space: nowrap;
+      user-select: none;
     }
     .fw-btn {
       background: transparent;
       border: none;
-      color: #94a3b8;
+      color: rgba(255, 255, 255, 0.45);
       cursor: pointer;
-      font-size: 14px;
-      padding: 4px;
+      font-size: 11px;
+      padding: 2px;
       display: flex;
       align-items: center;
       justify-content: center;
-      border-radius: 4px;
-      transition: background 0.2s, color 0.2s;
+      border-radius: 3px;
+      transition: color 0.15s, background 0.15s;
     }
     .fw-btn:hover {
-      background: rgba(255, 255, 255, 0.1);
+      background: rgba(255, 255, 255, 0.08);
       color: #fff;
     }
     .fw-hidden-row {
       display: none !important;
     }
     .fw-highlight-target {
-      outline: 2px solid #6366f1 !important;
+      outline: 1.5px dashed #818cf8 !important;
       cursor: crosshair !important;
     }
   `;
@@ -98,37 +115,36 @@ function matchText(text, pattern) {
   const container = document.createElement('div');
   container.id = 'fidelity-wildcard-overlay';
   container.innerHTML = `
-    <span style="font-size: 16px; user-select: none;">🔍</span>
-    <input type="text" id="fw-search-input" placeholder="Filter (*jun*2026)..." autocomplete="off">
-    <span id="fw-match-count">0 / 0</span>
-    <button id="fw-target-btn" class="fw-btn" title="Target specific table">🎯</button>
+    <span style="font-size: 12px; color: rgba(255, 255, 255, 0.5); user-select: none; display: flex; align-items: center;">🔍</span>
+    <input type="text" id="fw-search-input" placeholder="Filter positions..." autocomplete="off">
+    <span id="fw-match-count">0/0</span>
     <button id="fw-close-btn" class="fw-btn" title="Close and restore rows">✕</button>
   `;
   document.body.appendChild(container);
 
   // Dynamic positioning relative to native search bar
   function positionOverlay() {
-    const searchInput = document.querySelector('.posweb-grid_top-search-icon, .posweb-grid_top-search, .posweb-grid_top-refresh-datetime, #fa-search-input, .smart-suggest');
-    const rect = searchInput ? searchInput.getBoundingClientRect() : null;
-    
-    // Ensure search input is loaded, visible, and has valid coordinate bounds
-    if (rect && rect.top > 0 && rect.left > 0 && container.parentNode) {
-      container.style.position = 'absolute';
-      const containerHeight = container.offsetHeight || 55;
-      const containerWidth = container.offsetWidth || 380;
-      const topOffset = window.pageYOffset + rect.top - containerHeight - 8;
-      container.style.top = `${topOffset}px`;
-      const leftOffset = window.pageXOffset + rect.left + rect.width - containerWidth;
-      container.style.left = `${leftOffset}px`;
-      container.style.right = 'auto';
-      container.style.margin = '0';
-    } else {
-      // Safe fallback to top-right viewport fixed positioning
-      container.style.position = 'fixed';
-      container.style.top = '20px';
-      container.style.right = '20px';
-      container.style.left = 'auto';
+    const parent = document.querySelector('.posweb-grid_top-buttons-search-container');
+    if (parent) {
+      const searchWrapper = parent.querySelector('.posweb-grid_top-search');
+      if (searchWrapper) {
+        if (container.parentNode !== parent) {
+          parent.insertBefore(container, searchWrapper);
+        }
+        container.classList.add('inline');
+        return;
+      }
     }
+    
+    // Viewport fallback
+    if (container.parentNode !== document.body) {
+      document.body.appendChild(container);
+    }
+    container.classList.remove('inline');
+    container.style.position = 'fixed';
+    container.style.top = '20px';
+    container.style.right = '20px';
+    container.style.left = 'auto';
   }
 
   // Position it immediately and on resize/scroll
@@ -296,7 +312,7 @@ function matchText(text, pattern) {
   input.addEventListener('input', applyFilter);
   applyFilter(); // Initialize state and count on startup
 
-  // 3. Mutation Observer to auto-filter loaded dynamic elements
+  // 3. Mutation Observer to auto-filter loaded dynamic elements and snap relative layouts
   const observer = new MutationObserver((mutations) => {
     // Ignore mutations that occur inside our own overlay
     const isOverlayMutation = mutations.every(m => {
@@ -306,14 +322,17 @@ function matchText(text, pattern) {
     if (isOverlayMutation) return;
     
     applyFilter();
+    positionOverlay();
   });
   observer.observe(document.body, { childList: true, subtree: true });
 
   function cleanupTargeting() {
     if (!isTargeting) return;
     isTargeting = false;
-    targetBtn.style.color = '#94a3b8';
-    targetBtn.style.background = 'transparent';
+    if (targetBtn) {
+      targetBtn.style.color = '#94a3b8';
+      targetBtn.style.background = 'transparent';
+    }
     
     if (hoverTarget) {
       hoverTarget.classList.remove('fw-highlight-target');
@@ -383,20 +402,24 @@ function matchText(text, pattern) {
   function enableTargeting() {
     if (isTargeting) return;
     isTargeting = true;
-    targetBtn.style.color = '#6366f1';
-    targetBtn.style.background = 'rgba(99, 102, 241, 0.2)';
+    if (targetBtn) {
+      targetBtn.style.color = '#6366f1';
+      targetBtn.style.background = 'rgba(99, 102, 241, 0.2)';
+    }
 
     document.addEventListener('mousemove', handleMouseMove, true);
     document.addEventListener('click', handleGlobalClick, true);
   }
 
-  targetBtn.addEventListener('click', () => {
-    if (!isTargeting) {
-      enableTargeting();
-    } else {
-      cleanupTargeting();
-    }
-  });
+  if (targetBtn) {
+    targetBtn.addEventListener('click', () => {
+      if (!isTargeting) {
+        enableTargeting();
+      } else {
+        cleanupTargeting();
+      }
+    });
+  }
 
   // 4. Close & Clean Up routine
   function destroy() {

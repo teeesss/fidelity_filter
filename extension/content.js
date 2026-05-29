@@ -22,37 +22,36 @@ function matchText(text, pattern) {
   const container = document.createElement('div');
   container.id = 'fidelity-wildcard-overlay';
   container.innerHTML = `
-    <span style="font-size: 16px; user-select: none;">🔍</span>
-    <input type="text" id="fw-search-input" placeholder="Filter (*jun*2026)..." autocomplete="off">
-    <span id="fw-match-count">0 / 0</span>
-    <button id="fw-target-btn" class="fw-btn" title="Target specific table">🎯</button>
+    <span style="font-size: 12px; color: rgba(255, 255, 255, 0.5); user-select: none; display: flex; align-items: center;">🔍</span>
+    <input type="text" id="fw-search-input" placeholder="Filter positions..." autocomplete="off">
+    <span id="fw-match-count">0/0</span>
     <button id="fw-close-btn" class="fw-btn" title="Close and restore rows">✕</button>
   `;
   document.body.appendChild(container);
 
   // Dynamic positioning relative to native search bar
   function positionOverlay() {
-    const searchInput = document.querySelector('.posweb-grid_top-search-icon, .posweb-grid_top-search, .posweb-grid_top-refresh-datetime, #fa-search-input, .smart-suggest');
-    const rect = searchInput ? searchInput.getBoundingClientRect() : null;
-    
-    // Ensure search input is loaded, visible, and has valid coordinate bounds
-    if (rect && rect.top > 0 && rect.left > 0 && container.parentNode) {
-      container.style.position = 'absolute';
-      const containerHeight = container.offsetHeight || 55;
-      const containerWidth = container.offsetWidth || 380;
-      const topOffset = window.pageYOffset + rect.top - containerHeight - 8;
-      container.style.top = `${topOffset}px`;
-      const leftOffset = window.pageXOffset + rect.left + rect.width - containerWidth;
-      container.style.left = `${leftOffset}px`;
-      container.style.right = 'auto';
-      container.style.margin = '0';
-    } else {
-      // Safe fallback to top-right viewport fixed positioning
-      container.style.position = 'fixed';
-      container.style.top = '20px';
-      container.style.right = '20px';
-      container.style.left = 'auto';
+    const parent = document.querySelector('.posweb-grid_top-buttons-search-container');
+    if (parent) {
+      const searchWrapper = parent.querySelector('.posweb-grid_top-search');
+      if (searchWrapper) {
+        if (container.parentNode !== parent) {
+          parent.insertBefore(container, searchWrapper);
+        }
+        container.classList.add('inline');
+        return;
+      }
     }
+    
+    // Viewport fallback
+    if (container.parentNode !== document.body) {
+      document.body.appendChild(container);
+    }
+    container.classList.remove('inline');
+    container.style.position = 'fixed';
+    container.style.top = '20px';
+    container.style.right = '20px';
+    container.style.left = 'auto';
   }
 
   // Position it immediately and on resize/scroll
@@ -220,7 +219,7 @@ function matchText(text, pattern) {
   input.addEventListener('input', applyFilter);
   applyFilter(); // Initialize state and count on startup
 
-  // 3. Mutation Observer to auto-filter loaded dynamic elements
+  // 3. Mutation Observer to auto-filter loaded dynamic elements and snap relative layouts
   const observer = new MutationObserver((mutations) => {
     // Ignore mutations that occur inside our own overlay
     const isOverlayMutation = mutations.every(m => {
@@ -230,14 +229,17 @@ function matchText(text, pattern) {
     if (isOverlayMutation) return;
     
     applyFilter();
+    positionOverlay();
   });
   observer.observe(document.body, { childList: true, subtree: true });
 
   function cleanupTargeting() {
     if (!isTargeting) return;
     isTargeting = false;
-    targetBtn.style.color = '#94a3b8';
-    targetBtn.style.background = 'transparent';
+    if (targetBtn) {
+      targetBtn.style.color = '#94a3b8';
+      targetBtn.style.background = 'transparent';
+    }
     
     if (hoverTarget) {
       hoverTarget.classList.remove('fw-highlight-target');
@@ -307,20 +309,24 @@ function matchText(text, pattern) {
   function enableTargeting() {
     if (isTargeting) return;
     isTargeting = true;
-    targetBtn.style.color = '#6366f1';
-    targetBtn.style.background = 'rgba(99, 102, 241, 0.2)';
+    if (targetBtn) {
+      targetBtn.style.color = '#6366f1';
+      targetBtn.style.background = 'rgba(99, 102, 241, 0.2)';
+    }
 
     document.addEventListener('mousemove', handleMouseMove, true);
     document.addEventListener('click', handleGlobalClick, true);
   }
 
-  targetBtn.addEventListener('click', () => {
-    if (!isTargeting) {
-      enableTargeting();
-    } else {
-      cleanupTargeting();
-    }
-  });
+  if (targetBtn) {
+    targetBtn.addEventListener('click', () => {
+      if (!isTargeting) {
+        enableTargeting();
+      } else {
+        cleanupTargeting();
+      }
+    });
+  }
 
   // 4. Close & Clean Up routine
   function destroy() {

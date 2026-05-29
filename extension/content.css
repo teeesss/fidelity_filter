@@ -3,69 +3,87 @@
   top: 20px;
   right: 20px;
   z-index: 2147483647;
-  background: rgba(30, 41, 59, 0.75);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: 12px;
-  padding: 12px;
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  color: #f1f5f9;
+  background: rgba(15, 23, 42, 0.9);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 6px;
+  padding: 2px 8px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  color: #f5f5f7;
   display: flex;
   align-items: center;
-  gap: 8px;
-  min-width: 320px;
-  animation: fw-slide-in 0.3s ease-out;
+  gap: 6px;
+  min-width: 220px;
+  height: 28px;
+  box-sizing: border-box;
+  animation: fw-fade-in 0.2s ease-out;
 }
 
-@keyframes fw-slide-in {
-  from { transform: translateY(-20px); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
+#fidelity-wildcard-overlay.inline {
+  position: relative !important;
+  top: auto !important;
+  left: auto !important;
+  right: auto !important;
+  bottom: auto !important;
+  margin: 0 8px !important;
+  box-shadow: none !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  background: rgba(30, 41, 59, 0.85) !important;
+}
+
+@keyframes fw-fade-in {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 #fw-search-input {
-  background: rgba(15, 23, 42, 0.6);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: 6px;
+  background: transparent;
+  border: none;
   color: #fff;
-  padding: 6px 10px;
-  font-size: 13px;
+  padding: 0;
+  font-size: 12px;
+  font-weight: 400;
   outline: none;
   flex: 1;
-  transition: border 0.2s;
+  width: 100%;
+  height: 100%;
+  letter-spacing: -0.01em;
 }
 
-#fw-search-input:focus {
-  border-color: #6366f1;
+#fw-search-input::placeholder {
+  color: rgba(255, 255, 255, 0.4);
 }
 
 #fw-match-count {
-  background: rgba(99, 102, 241, 0.2);
-  color: #818cf8;
-  padding: 3px 8px;
-  border-radius: 6px;
-  font-size: 11px;
-  font-weight: bold;
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 10px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  border-left: 1px solid rgba(255, 255, 255, 0.15);
+  padding-left: 6px;
+  margin-left: 2px;
   white-space: nowrap;
+  user-select: none;
 }
 
 .fw-btn {
   background: transparent;
   border: none;
-  color: #94a3b8;
+  color: rgba(255, 255, 255, 0.45);
   cursor: pointer;
-  font-size: 14px;
-  padding: 4px;
+  font-size: 11px;
+  padding: 2px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 4px;
-  transition: background 0.2s, color 0.2s;
+  border-radius: 3px;
+  transition: color 0.15s, background 0.15s;
 }
 
 .fw-btn:hover {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.08);
   color: #fff;
 }
 
@@ -74,6 +92,7 @@
 }
 
 .fw-highlight-target {
-  outline: 2px solid #6366f1 !important;
+  outline: 1.5px dashed #818cf8 !important;
   cursor: crosshair !important;
 }
+
