@@ -132,6 +132,12 @@ function matchText(text, pattern) {
           parent.insertBefore(container, searchWrapper);
         }
         container.classList.add('inline');
+        // Clear fallback inline styles so stylesheet relative rules take over
+        container.style.position = '';
+        container.style.top = '';
+        container.style.left = '';
+        container.style.right = '';
+        container.style.margin = '';
         return;
       }
     }
