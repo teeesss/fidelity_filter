@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <!-- Definitions for gradients and shadows -->
+  <defs>
+    <!-- Background Gradient -->
+    <linearGradient id="bg-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1e1b4b" />
+      <stop offset="50%" stop-color="#0f172a" />
+      <stop offset="100%" stop-color="#020617" />
+    </linearGradient>
+
+    <!-- Glassmorphic Glow -->
+    <linearGradient id="glass-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.15" />
+      <stop offset="12%" stop-color="#ffffff" stop-opacity="0.05" />
+      <stop offset="100%" stop-color="#6366f1" stop-opacity="0.25" />
+    </linearGradient>
+
+    <!-- Border Gradient -->
+    <linearGradient id="border-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.4" />
+      <stop offset="40%" stop-color="#ffffff" stop-opacity="0.1" />
+      <stop offset="100%" stop-color="#6366f1" stop-opacity="0.5" />
+    </linearGradient>
+
+    <!-- Accent Glow -->
+    <radialGradient id="glow-accent" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#818cf8" stop-opacity="0.4" />
+      <stop offset="100%" stop-color="#818cf8" stop-opacity="0" />
+    </radialGradient>
+  </defs>
+
+  <!-- Smooth rounded square base -->
+  <rect x="24" y="24" width="464" height="464" rx="108" fill="url(#bg-grad)" />
+
+  <!-- Subtle inner radial glow -->
+  <circle cx="256" cy="256" r="200" fill="url(#glow-accent)" />
+
+  <!-- Glassmorphic Overlay Shield -->
+  <rect x="48" y="48" width="416" height="416" rx="88" fill="url(#glass-grad)" stroke="url(#border-grad)" stroke-width="6" />
+
+  <!-- Outer Ring / Target Frame -->
+  <circle cx="256" cy="256" r="160" fill="none" stroke="#4f46e5" stroke-width="12" stroke-dasharray="24 16" opacity="0.8" />
+
+  <!-- Glowing Search Funnel / wildcards -->
+  <g transform="translate(146, 146)">
+    <!-- Funnel / Filter Icon -->
+    <path d="M40 40 H180 L120 120 V170 L100 180 V120 Z" fill="none" stroke="#818cf8" stroke-width="16" stroke-linecap="round" stroke-linejoin="round" />
+    
+    <!-- Asterisk / Wildcard Star Symbol -->
+    <path d="M150 45 L170 65 M170 45 L150 65 M160 38 V72 M142 55 H178" fill="none" stroke="#34d399" stroke-width="10" stroke-linecap="round" />
+  </g>
+</svg>

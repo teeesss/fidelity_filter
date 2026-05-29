@@ -1,0 +1,79 @@
+#fidelity-wildcard-overlay {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 2147483647;
+  background: rgba(30, 41, 59, 0.75);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 12px;
+  padding: 12px;
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  color: #f1f5f9;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 320px;
+  animation: fw-slide-in 0.3s ease-out;
+}
+
+@keyframes fw-slide-in {
+  from { transform: translateY(-20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+#fw-search-input {
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 6px;
+  color: #fff;
+  padding: 6px 10px;
+  font-size: 13px;
+  outline: none;
+  flex: 1;
+  transition: border 0.2s;
+}
+
+#fw-search-input:focus {
+  border-color: #6366f1;
+}
+
+#fw-match-count {
+  background: rgba(99, 102, 241, 0.2);
+  color: #818cf8;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: bold;
+  white-space: nowrap;
+}
+
+.fw-btn {
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+  font-size: 14px;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: background 0.2s, color 0.2s;
+}
+
+.fw-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+.fw-hidden-row {
+  display: none !important;
+}
+
+.fw-highlight-target {
+  outline: 2px solid #6366f1 !important;
+  cursor: crosshair !important;
+}

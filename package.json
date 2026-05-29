@@ -4,7 +4,8 @@
   "description": "Fidelity Wildcard Filter Overlay Bookmarklet",
   "scripts": {
     "test": "node --test src/tests/*.test.js",
-    "build": "node src/build.js"
+    "build": "node src/build.js",
+    "build:extension": "node extension/build-extension.js"
   },
   "type": "module"
 }
