@@ -12,7 +12,7 @@ It enables rapid portfolio filtering using advanced wildcard patterns and multi-
 
 ## 📥 Direct Downloads & Quick Links
 
-* **📦 [Download Extension Directory (extension/)](https://github.com/teeesss/fidelity_filter/tree/master/extension)** – Clone or download this folder to load directly as an unpacked developer extension in Chrome (`chrome://extensions/`). *(Recommended — runs automatically on every visit)*
+* **📦 [Download Extension ZIP](https://github.com/teeesss/fidelity_filter/archive/refs/heads/master.zip)** – Click to download the repository as a ZIP file. Extract it and load the `extension/` folder directly as an unpacked developer extension in Chrome (`chrome://extensions/`). *(Recommended — runs automatically on every visit)*
 
 * **🚀 [Download Bookmarklet (dist/bookmarklet.txt)](https://raw.githubusercontent.com/teeesss/fidelity_filter/master/dist/bookmarklet.txt)** – Open this file, copy the single-line `javascript:...` code, and paste it directly into your browser bookmark's URL box. *(Alternative to the extension — no install required)*
 
@@ -67,10 +67,12 @@ When the overlay is closed (via the **✕** button), clicking **Relaunch Filter*
 ### 📦 Installation
 
 #### Method A: Chrome Extension (Recommended)
-1. Navigate to `chrome://extensions/` in your browser.
-2. Enable **Developer mode** (top-right toggle).
-3. Click **Load unpacked** (top-left button) and select the `extension` folder inside this repository.
-4. Open [Fidelity Positions](https://digital.fidelity.com) to see the filter box automatically snapped next to the native magnifying glass!
+1. Download the extension ZIP file: **[Download Extension ZIP](https://github.com/teeesss/fidelity_filter/archive/refs/heads/master.zip)**.
+2. Extract the downloaded `.zip` file on your computer.
+3. Open Chrome and navigate to `chrome://extensions/`.
+4. Enable **Developer mode** via the toggle in the top-right corner.
+5. Click **Load unpacked** (top-left button) and select the **`extension`** folder inside the extracted project directory.
+6. Open your [Fidelity Positions Dashboard](https://digital.fidelity.com) to see the filter box automatically snapped next to the native magnifying glass!
 
 #### Method B: Bookmarklet
 1. Open the compiled output file [dist/bookmarklet.txt](file:///x:/Fidelity_Overlay/dist/bookmarklet.txt).
