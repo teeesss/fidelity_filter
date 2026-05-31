@@ -46,7 +46,7 @@ It enables rapid portfolio filtering using advanced wildcard patterns and multi-
 4. Open [Fidelity Positions](https://digital.fidelity.com) to see the filter box automatically snapped next to the native magnifying glass!
 
 #### Method B: Bookmarklet
-1. Open the compiled output file [dist/bookmarklet.txt](file:///x:/Fidelity_Overlay/dist/bookmarklet.txt).
+1. Open the compiled output file [dist/bookmarklet.txt](https://raw.githubusercontent.com/teeesss/fidelity_filter/master/dist/bookmarklet.txt).
 2. Copy the entire single-line payload starting with `javascript:`.
 3. Create a new bookmark in your browser, paste the payload into the **URL / Location** field, and save it.
 4. Click the bookmark when viewing your Fidelity Positions dashboard to launch the filter.
