@@ -45,7 +45,7 @@ It enables portfolio filtering using advanced wildcard patterns and multi-term u
 3. Open Chrome and navigate to `chrome://extensions/`.
 4. Enable **Developer mode** via the toggle in the top-right corner.
 5. Click **Load unpacked** (top-left button) and select the **`extension`** folder inside the extracted project directory.
-6. Open your [Fidelity Positions Dashboard](https://digital.fidelity.com) to see the filter box automatically snapped next to the native magnifying glass!
+6. Open your [Fidelity Positions Dashboard](https://digital.fidelity.com/ftgw/digital/portfolio/positions) to see the filter box automatically snapped next to the native magnifying glass!
 
 #### Method B: Bookmarklet
 1. Open the compiled output file [dist/bookmarklet.txt](https://raw.githubusercontent.com/teeesss/fidelity_filter/master/dist/bookmarklet.txt).
